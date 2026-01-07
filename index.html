@@ -1,0 +1,1398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gully Cricket Quiz — E-Wallet & Micro-ATM Security</title>
+  <style>
+    :root{
+      --bg:#0b1220;
+      --panel:#101a33;
+      --card:#0f1a2e;
+      --ink:#eaf0ff;
+      --muted:#b9c6ff;
+      --accent:#6aa8ff;
+      --good:#2ee59d;
+      --bad:#ff5a7a;
+      --warn:#ffd166;
+      --line:rgba(255,255,255,.10);
+      --shadow: 0 12px 30px rgba(0,0,0,.35);
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(1200px 700px at 30% 10%, rgba(106,168,255,.18), transparent 55%),
+                  radial-gradient(900px 500px at 80% 20%, rgba(46,229,157,.12), transparent 55%),
+                  radial-gradient(900px 700px at 60% 90%, rgba(255,90,122,.10), transparent 55%),
+                  var(--bg);
+      color:var(--ink);
+    }
+    .wrap{max-width:1100px;margin:0 auto;padding:16px}
+    header{
+      display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;
+      margin-bottom:12px;
+    }
+    .brand{
+      display:flex;align-items:center;gap:10px;
+    }
+    .logo{
+      width:42px;height:42px;border-radius:14px;
+      background: linear-gradient(135deg, rgba(106,168,255,.95), rgba(46,229,157,.9));
+      box-shadow: var(--shadow);
+      display:grid;place-items:center;
+      color:#061025;font-weight:900;
+    }
+    .title h1{font-size:16px;margin:0;letter-spacing:.2px}
+    .title p{margin:2px 0 0 0;color:var(--muted);font-size:12px}
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap:12px;
+    }
+    @media (max-width: 920px){
+      .grid{grid-template-columns:1fr}
+    }
+
+    .panel{
+      background: linear-gradient(180deg, rgba(16,26,51,.95), rgba(13,21,42,.95));
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .panel .hd{
+      padding:14px 14px 10px 14px;
+      border-bottom:1px solid var(--line);
+      display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
+    }
+    .panel .hd .left{
+      display:flex;flex-direction:column;gap:2px;
+    }
+    .panel .hd .kicker{
+      color:var(--muted);font-size:12px
+    }
+    .panel .hd .big{
+      font-weight:800;letter-spacing:.2px
+    }
+    .panel .bd{padding:14px}
+
+    .scorebar{
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap:10px;
+      margin-top:10px;
+    }
+    .stat{
+      background: rgba(255,255,255,.04);
+      border:1px solid var(--line);
+      border-radius: 16px;
+      padding:10px;
+      min-height:64px;
+    }
+    .stat .lbl{color:var(--muted);font-size:11px}
+    .stat .val{font-size:20px;font-weight:900;margin-top:4px}
+    .pill{
+      display:inline-flex;align-items:center;gap:8px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.04);
+      padding:8px 10px;border-radius: 999px;
+      color:var(--muted);font-size:12px;
+    }
+
+    .pitch{
+      position:relative;
+      border-radius: 22px;
+      background:
+        linear-gradient(180deg, rgba(46,229,157,.10), rgba(46,229,157,.03)),
+        radial-gradient(900px 280px at 50% 10%, rgba(106,168,255,.12), transparent 60%),
+        rgba(255,255,255,.03);
+      border:1px solid var(--line);
+      padding:14px;
+      overflow:hidden;
+      min-height: 240px;
+    }
+    .pitch .lane{
+      position:absolute;inset:0;
+      background:
+        linear-gradient(90deg, transparent 0 15%, rgba(255,255,255,.06) 15% 16%, transparent 16% 84%, rgba(255,255,255,.06) 84% 85%, transparent 85% 100%),
+        linear-gradient(0deg, transparent 0 12%, rgba(255,255,255,.07) 12% 12.6%, transparent 12.6% 87.4%, rgba(255,255,255,.07) 87.4% 88%, transparent 88% 100%);
+      opacity:.6;
+      pointer-events:none;
+    }
+    .scoreboard{
+      display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
+      margin-bottom:12px;
+    }
+    .scoreboard .left{
+      display:flex;gap:10px;flex-wrap:wrap;align-items:center;
+    }
+    .chip{
+      background: rgba(255,255,255,.05);
+      border:1px solid var(--line);
+      border-radius: 999px;
+      padding:8px 10px;
+      font-size:12px;
+      color:var(--muted);
+      display:inline-flex;gap:8px;align-items:center;
+    }
+    .chip b{color:var(--ink)}
+    .runlights{
+      display:flex;gap:8px;align-items:center;
+    }
+    .dot{
+      width:10px;height:10px;border-radius:99px;background: rgba(255,255,255,.14);
+      border:1px solid var(--line);
+    }
+    .dot.on{background: rgba(106,168,255,.9)}
+    .wicket{
+      width:10px;height:10px;border-radius:3px;background: rgba(255,90,122,.9);
+      box-shadow:0 0 0 2px rgba(255,90,122,.12);
+    }
+
+    .bigcall{
+      display:grid;place-items:center;
+      padding:16px;
+      border-radius: 18px;
+      border:1px solid var(--line);
+      background: rgba(0,0,0,.20);
+      text-align:center;
+      min-height:120px;
+    }
+    .bigcall .label{color:var(--muted);font-size:12px;margin-bottom:6px}
+    .bigcall .text{font-size:18px;font-weight:900;letter-spacing:.2px}
+    .bigcall .sub{color:var(--muted);font-size:12px;margin-top:6px}
+
+    .pop{
+      position:absolute;left:50%;top:50%;
+      transform: translate(-50%,-50%) scale(.96);
+      padding:14px 16px;
+      border-radius: 16px;
+      border:1px solid var(--line);
+      background: rgba(9,14,27,.92);
+      box-shadow: var(--shadow);
+      opacity:0;
+      pointer-events:none;
+      transition: opacity .16s ease, transform .16s ease;
+      text-align:center;
+      min-width: 240px;
+    }
+    .pop.show{
+      opacity:1;
+      transform: translate(-50%,-50%) scale(1);
+    }
+    .pop .t{font-size:18px;font-weight:900}
+    .pop.good .t{color: var(--good)}
+    .pop.bad .t{color: var(--bad)}
+    .pop .m{margin-top:6px;color:var(--muted);font-size:12px;line-height:1.35}
+    .pop .mini{margin-top:8px;font-size:12px;color:var(--ink)}
+    .pop .mini b{color:var(--warn)}
+
+    .qcard{
+      background: rgba(255,255,255,.04);
+      border:1px solid var(--line);
+      border-radius: 18px;
+      padding:14px;
+    }
+    .qmeta{
+      display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
+      margin-bottom:10px;
+      color:var(--muted);font-size:12px;
+    }
+    .qtext{
+      font-size:15px;line-height:1.35;font-weight:700;
+      margin-bottom:12px;
+    }
+    .opts{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:10px;
+    }
+    .btn{
+      width:100%;
+      border:none;
+      border-radius: 16px;
+      padding:12px 12px;
+      background: rgba(255,255,255,.05);
+      border:1px solid var(--line);
+      color: var(--ink);
+      font-size:14px;
+      text-align:left;
+      cursor:pointer;
+      transition: transform .05s ease, background .12s ease, border-color .12s ease;
+      display:flex;gap:10px;align-items:flex-start;
+    }
+    .btn:hover{background: rgba(255,255,255,.07)}
+    .btn:active{transform: scale(.99)}
+    .tag{
+      width:28px;height:28px;border-radius:10px;
+      display:grid;place-items:center;
+      background: rgba(106,168,255,.16);
+      border:1px solid rgba(106,168,255,.25);
+      font-weight:900;
+      flex:0 0 auto;
+      margin-top:1px;
+    }
+    .btn .txt{flex:1}
+    .btn[disabled]{opacity:.6;cursor:not-allowed}
+
+    .controls{
+      display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between;margin-top:12px;
+    }
+    .primary, .ghost{
+      border:none;cursor:pointer;
+      border-radius: 14px;
+      padding:10px 12px;
+      font-weight:800;
+      letter-spacing:.2px;
+    }
+    .primary{
+      background: linear-gradient(135deg, rgba(106,168,255,.95), rgba(46,229,157,.9));
+      color:#061025;
+    }
+    .ghost{
+      background: rgba(255,255,255,.05);
+      border:1px solid var(--line);
+      color:var(--ink);
+    }
+    .foot{
+      margin-top:10px;
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.4;
+    }
+
+    .modal{
+      position:fixed;inset:0;
+      background: rgba(0,0,0,.55);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:16px;
+      z-index:50;
+    }
+    .modal.show{display:flex}
+    .modal .box{
+      width:min(860px, 96vw);
+      background: linear-gradient(180deg, rgba(16,26,51,.98), rgba(12,18,36,.98));
+      border:1px solid var(--line);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .modal .box .hd{
+      padding:14px 16px;border-bottom:1px solid var(--line);
+      display:flex;align-items:center;justify-content:space-between;gap:10px;
+    }
+    .modal .box .hd .ttl{font-weight:900}
+    .modal .box .bd{padding:14px 16px;color:var(--muted);font-size:13px;line-height:1.55}
+    .modal .grid2{
+      display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;
+    }
+    @media (max-width: 700px){ .modal .grid2{grid-template-columns:1fr} }
+    .cardmini{
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.04);
+      border-radius: 16px;
+      padding:12px;
+    }
+    .cardmini b{color:var(--ink)}
+    .kbd{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      padding:2px 6px;border-radius:8px;border:1px solid var(--line);
+      background: rgba(0,0,0,.25);
+      color:var(--ink);
+      font-size:12px;
+    }
+    .hr{height:1px;background:var(--line);margin:12px 0}
+    .small{font-size:12px;color:var(--muted)}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="logo">🏏</div>
+        <div class="title">
+          <h1>Gully Cricket Quiz — Cyber Safety</h1>
+          <p>E-Wallet & Micro-ATM Security (turn-based, phone-friendly, no reflex mechanics)</p>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <span class="pill">Balls per over: <b id="ballsPerOverLbl" style="color:var(--ink)">6</b></span>
+        <button class="ghost" id="howBtn" type="button">How to play</button>
+        <button class="primary" id="startBtn" type="button">Start / Restart</button>
+      </div>
+    </header>
+
+    <div class="grid">
+      <!-- Left: Pitch / Score -->
+      <section class="panel">
+        <div class="hd">
+          <div class="left">
+            <div class="kicker">Scoreboard</div>
+            <div class="big">Innings Progress</div>
+          </div>
+          <div class="pill" id="modePill">Mode: <b style="color:var(--ink)">Practice</b></div>
+        </div>
+        <div class="bd">
+          <div class="pitch" id="pitch">
+            <div class="lane"></div>
+
+            <div class="scoreboard">
+              <div class="left">
+                <div class="chip">Over: <b id="overLbl">0</b></div>
+                <div class="chip">Ball: <b id="ballLbl">0</b> / <b id="bpoLbl">6</b></div>
+                <div class="chip">Wickets: <b id="wktLbl">0</b> / <b id="wktMaxLbl">2</b></div>
+                <div class="chip">Runs: <b id="runsLbl">0</b></div>
+              </div>
+              <div class="runlights" id="ballDots" aria-label="Ball indicators"></div>
+            </div>
+
+            <div class="bigcall">
+              <div>
+                <div class="label" id="callLbl">Ready</div>
+                <div class="text" id="callText">Tap “Start” to begin the innings</div>
+                <div class="sub" id="callSub">Each correct answer scores runs. Wrong answers may cost a wicket or a dot ball.</div>
+              </div>
+            </div>
+
+            <div class="pop" id="pop">
+              <div class="t" id="popT">Correct!</div>
+              <div class="m" id="popM">Nice shot.</div>
+              <div class="mini" id="popMini"></div>
+            </div>
+          </div>
+
+          <div class="scorebar">
+            <div class="stat">
+              <div class="lbl">Accuracy</div>
+              <div class="val" id="accLbl">0%</div>
+            </div>
+            <div class="stat">
+              <div class="lbl">Correct</div>
+              <div class="val" id="okLbl">0</div>
+            </div>
+            <div class="stat">
+              <div class="lbl">Wrong</div>
+              <div class="val" id="badLbl">0</div>
+            </div>
+            <div class="stat">
+              <div class="lbl">Strike Rate</div>
+              <div class="val" id="srLbl">0</div>
+            </div>
+          </div>
+
+          <div class="foot">
+            Tip: This is a learning activity. After each ball, read the feedback before moving on.
+          </div>
+        </div>
+      </section>
+
+      <!-- Right: Question -->
+      <section class="panel">
+        <div class="hd">
+          <div class="left">
+            <div class="kicker">Question</div>
+            <div class="big">Answer to play the next ball</div>
+          </div>
+          <div class="pill">No retries per ball</div>
+        </div>
+        <div class="bd">
+          <div class="qcard" id="qcard">
+            <div class="qmeta">
+              <span id="topicLbl">Topic: —</span>
+              <span id="qCountLbl">0 / 0</span>
+            </div>
+            <div class="qtext" id="qText">Press Start to load the first question.</div>
+            <div class="opts" id="opts">
+              <button class="btn" disabled><span class="tag">A</span><span class="txt">—</span></button>
+              <button class="btn" disabled><span class="tag">B</span><span class="txt">—</span></button>
+              <button class="btn" disabled><span class="tag">C</span><span class="txt">—</span></button>
+              <button class="btn" disabled><span class="tag">D</span><span class="txt">—</span></button>
+            </div>
+
+            <div class="controls">
+              <button class="ghost" id="skipBtn" type="button" title="Skips the ball (counts as dot ball)">Skip ball</button>
+              <button class="ghost" id="endBtn" type="button" title="Ends innings and shows summary">End innings</button>
+            </div>
+
+            <div class="hr"></div>
+            <div class="small">
+              Runs logic: Most correct answers give <b style="color:var(--ink)">1, 2, 4, or 6</b> runs (based on difficulty). Some wrong answers become a <b style="color:var(--warn)">dot ball</b>; some cost a <b style="color:var(--bad)">wicket</b>.
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- How to play modal -->
+  <div class="modal" id="modal">
+    <div class="box">
+      <div class="hd">
+        <div class="ttl">How to play (Gully Cricket Quiz)</div>
+        <button class="ghost" id="closeHow" type="button">Close</button>
+      </div>
+      <div class="bd">
+        <div class="cardmini">
+          <b>Goal:</b> Score as many runs as possible by answering cyber-security questions correctly.
+        </div>
+
+        <div class="grid2">
+          <div class="cardmini">
+            <b>One ball = one question</b><br/>
+            Choose A/B/C/D. You get one attempt.
+          </div>
+          <div class="cardmini">
+            <b>Correct answer = runs</b><br/>
+            Runs can be 1 / 2 / 4 / 6 depending on question difficulty.
+          </div>
+          <div class="cardmini">
+            <b>Wrong answer</b><br/>
+            Usually a dot ball; sometimes a wicket (for critical safety mistakes).
+          </div>
+          <div class="cardmini">
+            <b>Short feedback after each ball</b><br/>
+            Read it before the next question appears.
+          </div>
+        </div>
+
+        <div class="hr"></div>
+        <div class="small">
+          Recommended use in MOOCs: keep this as a low-load activity and rotate new question sets weekly.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /***********************
+     * Question Bank
+     * Generated from user-provided content (E-wallet security + Micro-ATM security)
+     ***********************/
+    const QUESTIONS = [
+      // E-wallet basics
+      {
+        topic: "E-Wallet Basics",
+        q: "An e-wallet is best described as:",
+        choices: [
+          "A physical wallet with a chip inside",
+          "An electronic application used for online transactions using smartphones or computers",
+          "A bank branch counter service",
+          "A device used only for printing receipts"
+        ],
+        answer: 1,
+        explain: "An e-wallet is an electronic application used for e-commerce transactions via phone/computer.",
+        difficulty: 1
+      },
+      {
+        topic: "E-Wallet Basics",
+        q: "Which activity is commonly supported by e-wallets?",
+        choices: [
+          "Booking flights and paying utility bills",
+          "Replacing SIM cards at operator outlets",
+          "Repairing mobile hardware",
+          "Issuing passports"
+        ],
+        answer: 0,
+        explain: "E-wallets support purchases, bill payment, transfers, and bookings such as flights.",
+        difficulty: 1
+      },
+      {
+        topic: "E-Wallet Data",
+        q: "E-wallets can store which type of information permanently, making protection important?",
+        choices: [
+          "Only public news articles",
+          "Personally identifiable information (name, phone) and sensitive details (card numbers, PIN, credentials)",
+          "Only device wallpaper settings",
+          "Only offline music playlists"
+        ],
+        answer: 1,
+        explain: "E-wallets may store PII plus sensitive financial details, so strong security is essential.",
+        difficulty: 2
+      },
+      {
+        topic: "E-Wallet Security Mechanisms",
+        q: "Which mechanisms are mentioned as part of the payment process security for e-wallets?",
+        choices: [
+          "Certificate pinning and encryption",
+          "Turning off mobile data permanently",
+          "Using only public Wi-Fi",
+          "Sharing passwords with support staff"
+        ],
+        answer: 0,
+        explain: "The content mentions certificate pinning and encryption as security mechanisms.",
+        difficulty: 2
+      },
+
+      // Impersonation / SIM swap
+      {
+        topic: "SIM Swap & Impersonation",
+        q: "SIM swap impersonation mainly becomes dangerous because the attacker can:",
+        choices: [
+          "Generate OTPs on the duplicate SIM and authorize transactions",
+          "Increase battery life of the victim’s phone",
+          "Improve network coverage for the victim",
+          "Encrypt the victim’s phone automatically"
+        ],
+        answer: 0,
+        explain: "With a duplicate SIM, the fraudster can receive/generate OTPs and complete transactions.",
+        difficulty: 3
+      },
+      {
+        topic: "SIM Swap & Impersonation",
+        q: "A key preventive message about social engineering in financial services is:",
+        choices: [
+          "Support staff will always ask for passwords to verify identity",
+          "Genuine providers/support staff will not ask for passwords or account numbers via email/phone",
+          "Sharing PIN over SMS is safe if the sender is polite",
+          "Only desktops are targeted, phones are not"
+        ],
+        answer: 1,
+        explain: "Providers/support staff should never ask for private info like passwords or account numbers.",
+        difficulty: 2
+      },
+      {
+        topic: "SIM Swap & Alerts",
+        q: "Some mobile operators send an SMS to alert customers about:",
+        choices: [
+          "A SIM swap event",
+          "A new phone model release",
+          "Free movie tickets",
+          "Printer driver updates"
+        ],
+        answer: 0,
+        explain: "An SMS alert about SIM swap can help the customer act quickly to stop fraud.",
+        difficulty: 1
+      },
+      {
+        topic: "SIM Swap & Response",
+        q: "If you receive a SIM swap alert and you did not request it, the best immediate action is to:",
+        choices: [
+          "Ignore it and wait for a week",
+          "Contact the mobile operator immediately to stop the fraud",
+          "Share your wallet password to verify yourself",
+          "Turn off your phone for a full day"
+        ],
+        answer: 1,
+        explain: "The text recommends contacting the operator immediately to stop SIM swap fraud quickly.",
+        difficulty: 2
+      },
+
+      // MITM / Phishing
+      {
+        topic: "Phishing & MITM",
+        q: "Man-in-the-Middle / Man-in-the-Browser attacks commonly:",
+        choices: [
+          "Intercept transactions and read payment data while the user is typing details",
+          "Increase the brightness of the screen",
+          "Repair corrupted video files",
+          "Upgrade the SIM card automatically"
+        ],
+        answer: 0,
+        explain: "These attacks intercept online transactions and can read data entered in the browser.",
+        difficulty: 3
+      },
+      {
+        topic: "Phishing & Verification",
+        q: "To verify a website’s authenticity, the content recommends checking:",
+        choices: [
+          "The browser’s digital certificate (padlock/certificates)",
+          "Only the website’s color theme",
+          "The number of ads on the page",
+          "The time zone shown in the footer"
+        ],
+        answer: 0,
+        explain: "Verify the site by validating its digital certificate (padlock/certificates in browser).",
+        difficulty: 2
+      },
+      {
+        topic: "Phishing & Messages",
+        q: "Emails or texts asking you to confirm/share sensitive information like PIN, CVV, or passwords should be:",
+        choices: [
+          "Ignored",
+          "Forwarded to all contacts",
+          "Answered quickly to avoid account block",
+          "Saved as screenshots and shared publicly"
+        ],
+        answer: 0,
+        explain: "Such messages should be ignored as they are typical phishing attempts.",
+        difficulty: 2
+      },
+
+      // Malware
+      {
+        topic: "Malware on Apps",
+        q: "Malware attacks on wallet apps are risky because malware can:",
+        choices: [
+          "Collect details from the phone to misuse them",
+          "Only slow down the screen rotation",
+          "Only affect ringtone volume",
+          "Only change wallpaper settings"
+        ],
+        answer: 0,
+        explain: "The text says malware can collect details from the phone and be misused.",
+        difficulty: 2
+      },
+      {
+        topic: "Malware Prevention",
+        q: "One key prevention against malware attacks is to:",
+        choices: [
+          "Keep the wallet software and device software up to date",
+          "Install apps only from unknown sources",
+          "Disable all updates permanently",
+          "Share device passcode with friends"
+        ],
+        answer: 0,
+        explain: "Updates deliver important security fixes and help keep the environment safer.",
+        difficulty: 1
+      },
+      {
+        topic: "Security Tools",
+        q: "Which combination best matches the recommended security software approach?",
+        choices: [
+          "Firewalls + virus/malware detection + intrusion detection + mobile security solutions",
+          "Only a photo editor",
+          "Only a music player",
+          "Only a screen recorder"
+        ],
+        answer: 0,
+        explain: "The content recommends a range of security tools including firewall, AV/malware, IDS, and mobile security.",
+        difficulty: 2
+      },
+
+      // Best practices for e-wallet users
+      {
+        topic: "User Best Practices",
+        q: "Before using e-wallets, users should enable:",
+        choices: [
+          "Strong device passwords and additional security layers",
+          "Auto-login without any lock screen",
+          "Open Bluetooth always",
+          "A public profile with all personal details"
+        ],
+        answer: 0,
+        explain: "Strong device passwords and extra security layers reduce unauthorized access risk.",
+        difficulty: 1
+      },
+      {
+        topic: "Network Safety",
+        q: "Which network practice is recommended for safer e-wallet usage?",
+        choices: [
+          "Use only trusted networks and avoid public Wi-Fi",
+          "Prefer open public Wi-Fi for convenience",
+          "Disable Wi-Fi passwords for easy access",
+          "Use any network; encryption is unnecessary"
+        ],
+        answer: 0,
+        explain: "Use trusted networks; avoid public Wi-Fi; prefer secured Wi-Fi like WPA/WPA2 with strong passwords.",
+        difficulty: 2
+      },
+      {
+        topic: "App Source Trust",
+        q: "A good practice before installing an e-wallet app is to:",
+        choices: [
+          "Install from trusted sources and check ratings/reviews",
+          "Install from any random link shared in a message",
+          "Avoid reading reviews to save time",
+          "Disable permissions warnings permanently"
+        ],
+        answer: 0,
+        explain: "Ratings/reviews and trusted sources help judge integrity and support.",
+        difficulty: 1
+      },
+      {
+        topic: "Credentials Safety",
+        q: "Keeping login credentials secure means you should avoid:",
+        choices: [
+          "Writing them down in plain view or storing them in an unprotected file",
+          "Using device lock screens",
+          "Enabling alerts",
+          "Changing passwords"
+        ],
+        answer: 0,
+        explain: "Do not store credentials insecurely where they can be misused.",
+        difficulty: 2
+      },
+      {
+        topic: "Password Hygiene",
+        q: "A recommended password practice for a digital wallet is to:",
+        choices: [
+          "Use a unique, hard-to-guess password for the wallet",
+          "Reuse the same password everywhere",
+          "Use your name and birth year",
+          "Share the password with support staff"
+        ],
+        answer: 0,
+        explain: "Unique, hard-to-guess passwords reduce unauthorized access risk.",
+        difficulty: 2
+      },
+      {
+        topic: "Alerts & Vigilance",
+        q: "If you stop receiving calls/SMS for a long time during wallet usage, the content suggests you should:",
+        choices: [
+          "Check with your mobile operator to ensure connectivity was not tampered with",
+          "Assume everything is fine and ignore it",
+          "Post your wallet details on social media to test",
+          "Factory reset the phone immediately without backup"
+        ],
+        answer: 0,
+        explain: "Lack of calls/SMS could indicate tampering; verify with operator.",
+        difficulty: 3
+      },
+      {
+        topic: "Fraud Response",
+        q: "In case of suspected fraud, loss of phone, or account hacking, users should:",
+        choices: [
+          "Know the points of contact and contact provider/bank promptly",
+          "Wait until the next month’s statement",
+          "Share OTP publicly for faster help",
+          "Ignore terms and conditions completely"
+        ],
+        answer: 0,
+        explain: "Know the right contacts and act quickly; understand provider terms and conditions.",
+        difficulty: 2
+      },
+
+      // Micro ATM basics
+      {
+        topic: "Micro ATM Basics",
+        q: "Micro ATMs are best described as:",
+        choices: [
+          "PoS devices that use minimal power and connect to banking servers via GPRS",
+          "Desktop computers used only in metro cities",
+          "Home routers for Wi-Fi extension",
+          "Devices used only for printing passbooks"
+        ],
+        answer: 0,
+        explain: "Micro ATMs are PoS devices with low power needs connecting via GPRS to banking servers.",
+        difficulty: 1
+      },
+      {
+        topic: "Micro ATM Transactions",
+        q: "Which set of transactions is mentioned as supported by micro ATMs?",
+        choices: [
+          "Deposit, withdrawal, funds transfer, balance enquiry/mini-statement",
+          "Only gaming and video streaming",
+          "Only passport renewal",
+          "Only mobile recharge"
+        ],
+        answer: 0,
+        explain: "Micro ATMs support basic interoperable banking transactions including deposit/withdrawal/transfer/enquiry.",
+        difficulty: 1
+      },
+
+      // Micro ATM authentication
+      {
+        topic: "Micro ATM Authentication",
+        q: "Which authentication option is explicitly listed for micro ATM interoperable transactions?",
+        choices: [
+          "Aadhaar + Biometric",
+          "Only face recognition without Aadhaar",
+          "Only email password",
+          "Only social media login"
+        ],
+        answer: 0,
+        explain: "Aadhaar + Biometric is listed among supported authentication mechanisms.",
+        difficulty: 1
+      },
+      {
+        topic: "Micro ATM Authentication",
+        q: "Which combination is listed as an option for card-based authentication?",
+        choices: [
+          "Magnetic stripe card + Bank PIN",
+          "Magnetic stripe card + birthday",
+          "Magnetic stripe card + public Wi-Fi",
+          "Magnetic stripe card + screenshot"
+        ],
+        answer: 0,
+        explain: "Magnetic stripe card + Bank PIN is listed as an authentication means.",
+        difficulty: 2
+      },
+
+      // POS data vulnerabilities
+      {
+        topic: "POS Data Vulnerabilities",
+        q: "The three key areas of POS data vulnerability highlighted are data:",
+        choices: [
+          "In memory, in transit, and at rest",
+          "In photos, in songs, and in videos",
+          "In chat, in calls, and in games",
+          "In weather, in maps, and in calendars"
+        ],
+        answer: 0,
+        explain: "The text highlights data in memory, data in transit, and data at rest.",
+        difficulty: 2
+      },
+      {
+        topic: "Data in Memory",
+        q: "Why is data in memory hard to defend at a POS system?",
+        choices: [
+          "If an attacker has access to the POS system, memory can be exposed",
+          "Because memory is always encrypted by default",
+          "Because the network cable is always cut",
+          "Because screenshots block attackers"
+        ],
+        answer: 0,
+        explain: "If an attacker can access the POS system, memory exposure is difficult to prevent.",
+        difficulty: 3
+      },
+      {
+        topic: "Encryption Strategy",
+        q: "To reduce the risk of memory scrapers, the content recommends:",
+        choices: [
+          "Encrypt card data as soon as possible and keep it encrypted through its lifecycle",
+          "Store track data in clear text for faster processing",
+          "Disable encryption to reduce CPU usage",
+          "Share the encryption key in a public group"
+        ],
+        answer: 0,
+        explain: "Encrypt early and keep it encrypted to reduce exposure; P2PE can help.",
+        difficulty: 3
+      },
+      {
+        topic: "P2PE",
+        q: "Point-to-Point Encryption (P2PE) is suggested to address:",
+        choices: [
+          "Encrypting card data (including in memory) as early as possible and keeping it protected",
+          "Making the POS screen brighter",
+          "Speeding up video buffering",
+          "Printing larger receipts"
+        ],
+        answer: 0,
+        explain: "P2PE helps keep card data encrypted as early as possible, reducing memory exposure risk.",
+        difficulty: 3
+      },
+
+      // Skimming
+      {
+        topic: "Skimming",
+        q: "Skimming refers to:",
+        choices: [
+          "Theft of card information using a small device near the card acceptance slot",
+          "Legally updating bank records",
+          "Changing ATM wallpaper",
+          "Compressing files on a device"
+        ],
+        answer: 0,
+        explain: "Skimming steals card data using a small device near the acceptance slot.",
+        difficulty: 2
+      },
+      {
+        topic: "Skimming Prevention",
+        q: "Before using a micro ATM, users should ensure:",
+        choices: [
+          "No strange objects are attached near the card insertion panel",
+          "The machine is placed near a window",
+          "The screen is set to maximum brightness",
+          "The receipt paper is brand new"
+        ],
+        answer: 0,
+        explain: "Strange objects may indicate skimming devices.",
+        difficulty: 2
+      },
+
+      // Social engineering (Micro ATM)
+      {
+        topic: "Social Engineering",
+        q: "In micro ATM contexts, social engineering often involves the fraudster:",
+        choices: [
+          "Posing as staff, offering help, and gaining trust to obtain sensitive details",
+          "Repairing the ATM internally as a technician",
+          "Encrypting the bank’s servers",
+          "Only changing printer cartridges"
+        ],
+        answer: 0,
+        explain: "Fraudsters may pose as staff to gain trust and extract information.",
+        difficulty: 2
+      },
+      {
+        topic: "User Behavior",
+        q: "A safe practice while entering an ATM PIN is to:",
+        choices: [
+          "Cover the PIN pad while typing",
+          "Say the PIN aloud to remember it",
+          "Type the PIN slowly and announce each digit",
+          "Send the PIN via SMS to yourself"
+        ],
+        answer: 0,
+        explain: "Covering the PIN pad reduces shoulder-surfing and observation risk.",
+        difficulty: 1
+      },
+
+      // Micro ATM user best practices
+      {
+        topic: "Micro ATM Best Practices",
+        q: "Which is a recommended user best practice after transactions?",
+        choices: [
+          "Destroy/shred receipts securely after reviewing",
+          "Keep receipts visible on the counter",
+          "Share receipts on social media",
+          "Avoid checking receipts at all"
+        ],
+        answer: 0,
+        explain: "Receipts can carry sensitive info; destroy them securely after checking.",
+        difficulty: 2
+      },
+      {
+        topic: "Micro ATM Best Practices",
+        q: "Monitoring bank statements helps because it allows users to:",
+        choices: [
+          "Detect and dispute unauthorized charges/withdrawals quickly",
+          "Increase network speed",
+          "Unlock new phone themes",
+          "Avoid using passwords"
+        ],
+        answer: 0,
+        explain: "Regular statement review helps detect unauthorized activity quickly.",
+        difficulty: 1
+      },
+      {
+        topic: "PIN Hygiene",
+        q: "Which practice is explicitly discouraged?",
+        choices: [
+          "Writing the PIN on the credit/debit card",
+          "Changing PIN regularly",
+          "Covering the PIN pad",
+          "Disputing unauthorized transactions promptly"
+        ],
+        answer: 0,
+        explain: "Never write the PIN on the card.",
+        difficulty: 1
+      },
+      {
+        topic: "Handling Assistance",
+        q: "When a stranger offers help using a micro ATM, the safer behavior is to:",
+        choices: [
+          "Avoid getting carried away and do not hand over your card",
+          "Give them the card and PIN to finish quickly",
+          "Tell them your account details for verification",
+          "Let them keep the card until the next day"
+        ],
+        answer: 0,
+        explain: "Do not hand over your card or share sensitive details with strangers claiming to help.",
+        difficulty: 2
+      },
+
+      // Service provider best practices
+      {
+        topic: "Service Provider Practices",
+        q: "A key best practice for micro ATM service providers is that the device must not:",
+        choices: [
+          "Transmit confidential data unencrypted over the network",
+          "Use a power adapter",
+          "Print mini-statements",
+          "Connect to banking servers"
+        ],
+        answer: 0,
+        explain: "Confidential data must not be transmitted unencrypted on the network.",
+        difficulty: 3
+      },
+      {
+        topic: "Service Provider Practices",
+        q: "To reduce misuse, the micro ATM should automatically:",
+        choices: [
+          "Logout the operator and lock itself after inactivity",
+          "Share the session with nearby devices",
+          "Disable authentication checks",
+          "Store PINs in plain text for convenience"
+        ],
+        answer: 0,
+        explain: "Auto-logout and lock after inactivity reduces unauthorized use.",
+        difficulty: 2
+      },
+      {
+        topic: "Service Provider Practices",
+        q: "Keeping micro ATM software and security tools updated is recommended because:",
+        choices: [
+          "It provides timely security fixes and reduces vulnerabilities",
+          "It makes receipts longer",
+          "It increases the number of ads shown",
+          "It disables encryption automatically"
+        ],
+        answer: 0,
+        explain: "Regular updates provide security fixes and help maintain a safer environment.",
+        difficulty: 2
+      },
+      {
+        topic: "Customer Education",
+        q: "A best practice for service providers is to:",
+        choices: [
+          "Educate customers about basic functionality and security best practices",
+          "Ask customers to share PIN for faster processing",
+          "Encourage customers to use public Wi-Fi for transactions",
+          "Advise customers to ignore statements and alerts"
+        ],
+        answer: 0,
+        explain: "Education reduces social engineering success and unsafe user behavior.",
+        difficulty: 1
+      }
+    ];
+
+    /***********************
+     * Game rules settings
+     ***********************/
+    const SETTINGS = {
+      ballsPerOver: 6,
+      maxWickets: 2,
+      // Wrong answer: some become wicket depending on "criticality" (difficulty >=3)
+      wicketChanceEasy: 0.10,   // difficulty 1
+      wicketChanceMed: 0.22,    // difficulty 2
+      wicketChanceHard: 0.40,   // difficulty 3
+      // Delay settings (ms)
+      feedbackHoldMs: 1200,     // keep pop visible
+      nextBallDelayMs: 900      // after pop fades, load next Q
+    };
+
+    /***********************
+     * State
+     ***********************/
+    let state = null;
+    let deck = [];
+    let current = null;
+    let locked = false;
+
+    const $ = (id) => document.getElementById(id);
+
+    // UI refs
+    const overLbl = $("overLbl");
+    const ballLbl = $("ballLbl");
+    const bpoLbl = $("bpoLbl");
+    const wktLbl = $("wktLbl");
+    const wktMaxLbl = $("wktMaxLbl");
+    const runsLbl = $("runsLbl");
+
+    const callLbl = $("callLbl");
+    const callText = $("callText");
+    const callSub = $("callSub");
+
+    const qText = $("qText");
+    const opts = $("opts");
+    const topicLbl = $("topicLbl");
+    const qCountLbl = $("qCountLbl");
+
+    const accLbl = $("accLbl");
+    const okLbl = $("okLbl");
+    const badLbl = $("badLbl");
+    const srLbl = $("srLbl");
+
+    const pop = $("pop");
+    const popT = $("popT");
+    const popM = $("popM");
+    const popMini = $("popMini");
+
+    const ballDots = $("ballDots");
+
+    $("ballsPerOverLbl").textContent = SETTINGS.ballsPerOver;
+
+    function shuffle(arr){
+      for(let i=arr.length-1;i>0;i--){
+        const j = Math.floor(Math.random()*(i+1));
+        [arr[i],arr[j]] = [arr[j],arr[i]];
+      }
+      return arr;
+    }
+
+    function makeDeck(){
+      // Clone + shuffle. Use all questions; in long sessions you can add more.
+      deck = shuffle(QUESTIONS.map((q, idx) => ({...q, _id: idx})));
+    }
+
+    function resetState(){
+      state = {
+        over: 0,
+        ballInOver: 0,
+        ballsFaced: 0,
+        wickets: 0,
+        runs: 0,
+        correct: 0,
+        wrong: 0,
+        asked: 0,
+        ended: false
+      };
+      locked = false;
+      current = null;
+      makeDeck();
+      renderDots();
+      renderAll();
+    }
+
+    function renderDots(){
+      ballDots.innerHTML = "";
+      for(let i=0;i<SETTINGS.ballsPerOver;i++){
+        const d = document.createElement("div");
+        d.className = "dot";
+        ballDots.appendChild(d);
+      }
+    }
+
+    function setDots(){
+      const nodes = [...ballDots.children];
+      nodes.forEach((n, i) => {
+        n.className = "dot" + (i < state.ballInOver ? " on" : "");
+      });
+    }
+
+    function difficultyRuns(diff){
+      // diff 1 -> 1 or 2
+      // diff 2 -> 2 or 4
+      // diff 3 -> 4 or 6
+      const r = Math.random();
+      if(diff <= 1) return (r < 0.65 ? 1 : 2);
+      if(diff === 2) return (r < 0.60 ? 2 : 4);
+      return (r < 0.55 ? 4 : 6);
+    }
+
+    function wicketChance(diff){
+      if(diff <= 1) return SETTINGS.wicketChanceEasy;
+      if(diff === 2) return SETTINGS.wicketChanceMed;
+      return SETTINGS.wicketChanceHard;
+    }
+
+    function showPop(kind, title, message, miniHTML=""){
+      pop.classList.remove("good","bad","show");
+      pop.classList.add(kind);
+      popT.textContent = title;
+      popM.textContent = message;
+      popMini.innerHTML = miniHTML || "";
+      // show
+      requestAnimationFrame(() => pop.classList.add("show"));
+      // hide later
+      setTimeout(() => pop.classList.remove("show"), SETTINGS.feedbackHoldMs);
+    }
+
+    function updateDerived(){
+      const total = state.correct + state.wrong;
+      const acc = total ? Math.round((state.correct/total)*100) : 0;
+      const sr = state.ballsFaced ? Math.round((state.runs/state.ballsFaced)*100) : 0; // cricket-ish
+      accLbl.textContent = acc + "%";
+      okLbl.textContent = state.correct;
+      badLbl.textContent = state.wrong;
+      srLbl.textContent = sr;
+    }
+
+    function renderAll(){
+      overLbl.textContent = state.over;
+      ballLbl.textContent = state.ballInOver;
+      bpoLbl.textContent = SETTINGS.ballsPerOver;
+      wktLbl.textContent = state.wickets;
+      wktMaxLbl.textContent = SETTINGS.maxWickets;
+      runsLbl.textContent = state.runs;
+      setDots();
+      updateDerived();
+    }
+
+    function setQuestionUI(q, index, total){
+      topicLbl.textContent = "Topic: " + (q?.topic || "—");
+      qCountLbl.textContent = `${index} / ${total}`;
+      qText.textContent = q ? q.q : "—";
+
+      const buttons = [...opts.querySelectorAll(".btn")];
+      const labels = ["A","B","C","D"];
+      buttons.forEach((btn, i) => {
+        const tag = btn.querySelector(".tag");
+        const txt = btn.querySelector(".txt");
+        tag.textContent = labels[i];
+        txt.textContent = q ? q.choices[i] : "—";
+        btn.disabled = !q || locked || state.ended;
+        btn.onclick = () => handleAnswer(i);
+      });
+    }
+
+    function nextBall(){
+      if(state.ended) return;
+
+      // innings end checks
+      if(state.wickets >= SETTINGS.maxWickets){
+        endInnings("All out (wickets lost).");
+        return;
+      }
+      if(deck.length === 0){
+        endInnings("Question bank finished.");
+        return;
+      }
+
+      // advance ball/over counters before presenting question
+      if(state.ballInOver === 0){
+        state.over += 1;
+      }
+
+      // pick question
+      current = deck.pop();
+      state.asked += 1;
+
+      callLbl.textContent = `Over ${state.over} • Ball ${state.ballInOver + 1}`;
+      callText.textContent = "Answer the question to play this ball";
+      callSub.textContent = "Read the feedback after you answer.";
+
+      setQuestionUI(current, state.asked, QUESTIONS.length);
+      renderAll();
+    }
+
+    function lockButtons(lock=true){
+      locked = lock;
+      [...opts.querySelectorAll(".btn")].forEach(b => b.disabled = lock || state.ended);
+      $("skipBtn").disabled = lock || state.ended;
+      $("endBtn").disabled = lock || state.ended;
+    }
+
+    function advanceBallCounters(){
+      state.ballInOver += 1;
+      state.ballsFaced += 1;
+
+      // Over complete?
+      if(state.ballInOver >= SETTINGS.ballsPerOver){
+        state.ballInOver = 0;
+        callLbl.textContent = "Over complete";
+        callText.textContent = "New over starts now";
+        callSub.textContent = "Keep going.";
+      }
+    }
+
+    function handleAnswer(choiceIndex){
+      if(!current || locked || state.ended) return;
+      lockButtons(true);
+
+      const correct = (choiceIndex === current.answer);
+      const diff = current.difficulty || 2;
+
+      if(correct){
+        const runs = difficultyRuns(diff);
+        state.runs += runs;
+        state.correct += 1;
+
+        advanceBallCounters();
+
+        showPop(
+          "good",
+          "Correct!",
+          `You scored ${runs} run${runs>1?"s":""}.`,
+          `<div class="mini"><b>Why:</b> ${escapeHtml(current.explain)}</div>`
+        );
+      }else{
+        state.wrong += 1;
+
+        // decide wicket vs dot ball based on difficulty (critical mistakes more likely wicket)
+        const wc = wicketChance(diff);
+        const isWicket = Math.random() < wc;
+
+        if(isWicket){
+          state.wickets += 1;
+          advanceBallCounters();
+          showPop(
+            "bad",
+            "Wicket!",
+            "Wrong answer. This mistake cost a wicket.",
+            `<div class="mini"><b>Correct:</b> ${escapeHtml(current.choices[current.answer])}<br/><b>Why:</b> ${escapeHtml(current.explain)}</div>`
+          );
+        }else{
+          advanceBallCounters();
+          showPop(
+            "bad",
+            "Dot ball",
+            "Wrong answer. No runs this ball.",
+            `<div class="mini"><b>Correct:</b> ${escapeHtml(current.choices[current.answer])}<br/><b>Why:</b> ${escapeHtml(current.explain)}</div>`
+          );
+        }
+      }
+
+      renderAll();
+
+      // after feedback, load next question
+      setTimeout(() => {
+        if(state.ended) return;
+        lockButtons(false);
+        nextBall();
+      }, SETTINGS.feedbackHoldMs + SETTINGS.nextBallDelayMs);
+    }
+
+    function skipBall(){
+      if(locked || state.ended) return;
+      lockButtons(true);
+
+      state.wrong += 1; // treat skip as wrong for analytics (optional)
+      advanceBallCounters();
+
+      showPop(
+        "bad",
+        "Skip",
+        "Dot ball. You skipped this question.",
+        `<div class="mini"><b>Tip:</b> Try answering next time for better learning and score.</div>`
+      );
+
+      renderAll();
+
+      setTimeout(() => {
+        lockButtons(false);
+        nextBall();
+      }, SETTINGS.feedbackHoldMs + SETTINGS.nextBallDelayMs);
+    }
+
+    function endInnings(reason){
+      state.ended = true;
+      lockButtons(true);
+
+      callLbl.textContent = "Innings ended";
+      callText.textContent = `Final Score: ${state.runs} runs`;
+      callSub.textContent = reason;
+
+      setQuestionUI(null, state.asked, QUESTIONS.length);
+
+      // Summary pop
+      const total = state.correct + state.wrong;
+      const acc = total ? Math.round((state.correct/total)*100) : 0;
+      showPop(
+        "good",
+        "Summary",
+        `Runs: ${state.runs} • Wickets: ${state.wickets}/${SETTINGS.maxWickets} • Accuracy: ${acc}%`,
+        `<div class="mini"><b>Suggestion:</b> Review incorrect concepts and replay for improvement.</div>`
+      );
+    }
+
+    function escapeHtml(s){
+      return String(s)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    // Buttons
+    $("startBtn").addEventListener("click", () => {
+      resetState();
+      lockButtons(false);
+      callLbl.textContent = "Innings start";
+      callText.textContent = "Ball 1 is ready";
+      callSub.textContent = "Answer calmly. No timers.";
+      // start first ball
+      nextBall();
+    });
+
+    $("skipBtn").addEventListener("click", skipBall);
+    $("endBtn").addEventListener("click", () => endInnings("Ended by learner."));
+
+    // Modal
+    const modal = $("modal");
+    $("howBtn").addEventListener("click", () => modal.classList.add("show"));
+    $("closeHow").addEventListener("click", () => modal.classList.remove("show"));
+    modal.addEventListener("click", (e) => {
+      if(e.target === modal) modal.classList.remove("show");
+    });
+
+    // Init UI state
+    (function init(){
+      $("modePill").innerHTML = 'Mode: <b style="color:var(--ink)">Practice</b>';
+      resetState();
+      lockButtons(true);
+      callLbl.textContent = "Ready";
+      callText.textContent = "Tap “Start / Restart” to begin the innings";
+      callSub.textContent = "Answer one question per ball. Read feedback.";
+      setQuestionUI(null, 0, QUESTIONS.length);
+    })();
+  </script>
+</body>
+</html>
