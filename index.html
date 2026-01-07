@@ -3,28 +3,24 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Gully Cricket Quiz — Animated + Flip Screens</title>
+  <title>Gully Cricket Quiz — High Graphics (No Flicker)</title>
   <style>
     :root{
-      --bg:#071022;
-      --panel:#0f1b35;
-      --card:#0b1630;
+      --bg:#061022;
+      --panel:#0e1a33;
       --ink:#eaf0ff;
       --muted:#b9c6ff;
-      --accent:#6aa8ff;
-      --good:#2ee59d;
-      --bad:#ff5a7a;
-      --warn:#ffd166;
       --line:rgba(255,255,255,.12);
-      --shadow: 0 14px 34px rgba(0,0,0,.40);
+      --shadow: 0 14px 34px rgba(0,0,0,.42);
       --radius:18px;
 
-      --grass1: rgba(46,229,157,.16);
-      --grass2: rgba(46,229,157,.08);
-      --pitch1: rgba(255,209,102,.20);
-      --pitch2: rgba(255,209,102,.08);
+      --accent1:#6aa8ff;
+      --accent2:#2ee59d;
+      --bad:#ff5a7a;
+      --warn:#ffd166;
     }
     *{box-sizing:border-box}
+    html,body{height:100%}
     body{
       margin:0;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
@@ -34,8 +30,9 @@
         radial-gradient(900px 560px at 85% 18%, rgba(46,229,157,.16), transparent 60%),
         radial-gradient(900px 720px at 60% 92%, rgba(255,90,122,.12), transparent 60%),
         var(--bg);
+      overflow-x:hidden;
     }
-    .wrap{max-width:1100px;margin:0 auto;padding:14px}
+    .wrap{max-width:1120px;margin:0 auto;padding:14px}
     header{
       display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
       margin-bottom:10px;
@@ -43,7 +40,7 @@
     .brand{display:flex;align-items:center;gap:10px}
     .logo{
       width:42px;height:42px;border-radius:14px;
-      background: linear-gradient(135deg, rgba(106,168,255,.95), rgba(46,229,157,.9));
+      background: linear-gradient(135deg, rgba(106,168,255,.95), rgba(46,229,157,.90));
       display:grid;place-items:center;
       color:#061025;font-weight:900;
       box-shadow: var(--shadow);
@@ -77,17 +74,21 @@
       color:var(--ink);
     }
 
-    /* Single container that flips between quiz + game */
+    /* Stage: both screens stay mounted, crossfade only (no flicker) */
     .stage{
       position:relative;
-      min-height: 560px;
+      min-height: 600px;
+      transform: translateZ(0);
     }
     .screen{
       position:absolute; inset:0;
       opacity:0;
-      transform: translateY(10px) scale(.99);
+      transform: translateY(6px) scale(.995);
       pointer-events:none;
       transition: opacity .22s ease, transform .22s ease;
+      will-change: opacity, transform;
+      backface-visibility:hidden;
+      transform-style:preserve-3d;
     }
     .screen.show{
       opacity:1;
@@ -96,7 +97,7 @@
     }
 
     .panel{
-      background: linear-gradient(180deg, rgba(15,27,53,.95), rgba(10,18,40,.95));
+      background: linear-gradient(180deg, rgba(14,26,51,.95), rgba(9,16,36,.95));
       border:1px solid var(--line);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
@@ -107,278 +108,26 @@
       border-bottom:1px solid var(--line);
       display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
     }
-    .panel .hd .left{display:flex;flex-direction:column;gap:2px}
     .kicker{color:var(--muted);font-size:12px}
-    .big{font-weight:900;letter-spacing:.2px}
+    .big{font-weight:950;letter-spacing:.2px}
     .panel .bd{padding:14px}
 
-    /* === GAME SCREEN === */
-    .gameLayout{
-      display:grid;
-      grid-template-columns: 1.2fr .8fr;
-      gap:12px;
-    }
+    /* Layout */
+    .gameLayout{display:grid;grid-template-columns:1.2fr .8fr;gap:12px}
     @media (max-width: 980px){ .gameLayout{grid-template-columns:1fr} }
 
-    .scene{
-      position:relative;
+    /* Canvas container */
+    .canvasWrap{
       border-radius: 22px;
       border:1px solid var(--line);
       overflow:hidden;
-      min-height: 360px;
-      background:
-        radial-gradient(900px 360px at 50% 10%, rgba(106,168,255,.18), transparent 60%),
-        radial-gradient(800px 520px at 50% 115%, rgba(46,229,157,.10), transparent 55%),
-        rgba(255,255,255,.03);
+      background: rgba(255,255,255,.03);
       box-shadow: inset 0 0 0 1px rgba(255,255,255,.03);
+      position:relative;
+      min-height: 380px;
     }
+    canvas{display:block;width:100%;height:100%}
 
-    /* Stadium lights */
-    .lights{
-      position:absolute;left:-10%;right:-10%;top:-24%;
-      height:60%;
-      background:
-        radial-gradient(closest-side at 18% 40%, rgba(255,255,255,.14), transparent 70%),
-        radial-gradient(closest-side at 50% 35%, rgba(255,255,255,.12), transparent 72%),
-        radial-gradient(closest-side at 82% 40%, rgba(255,255,255,.14), transparent 70%);
-      opacity:.85;
-      pointer-events:none;
-    }
-
-    /* Crowd band */
-    .crowd{
-      position:absolute;left:0;right:0;top:0;height:24%;
-      background:
-        linear-gradient(180deg, rgba(0,0,0,.42), rgba(0,0,0,.12)),
-        repeating-linear-gradient(90deg, rgba(255,255,255,.12) 0 5px, rgba(255,255,255,.04) 5px 14px);
-      border-bottom:1px solid rgba(255,255,255,.10);
-      opacity:.78;
-      pointer-events:none;
-    }
-
-    /* Grass stripes */
-    .grass{
-      position:absolute;left:0;right:0;bottom:0;height:52%;
-      background:
-        repeating-linear-gradient(90deg, var(--grass1) 0 40px, var(--grass2) 40px 80px),
-        radial-gradient(900px 260px at 50% 20%, rgba(46,229,157,.20), rgba(46,229,157,.06) 55%, transparent 72%),
-        linear-gradient(180deg, rgba(46,229,157,.12), rgba(46,229,157,.03));
-      border-top:1px solid rgba(255,255,255,.08);
-    }
-
-    /* Boundary rope */
-    .boundary{
-      position:absolute;left:50%;bottom:9%;
-      width:94%;height:70%;
-      transform: translateX(-50%);
-      border-radius: 999px;
-      border: 2px dashed rgba(255,255,255,.10);
-      opacity:.65;
-      pointer-events:none;
-    }
-
-    /* Pitch strip + creases */
-    .pitchStrip{
-      position:absolute;left:50%;bottom:8%;
-      width:54%;height:28%;
-      transform: translateX(-50%);
-      border-radius: 18px;
-      background: linear-gradient(180deg, var(--pitch1), var(--pitch2));
-      border:1px solid rgba(255,209,102,.20);
-      box-shadow: 0 10px 26px rgba(0,0,0,.22);
-    }
-    .crease{
-      position:absolute;left:50%;
-      width:54%;height:2px;
-      transform: translateX(-50%);
-      background: rgba(255,255,255,.18);
-      opacity:.9;
-    }
-    .crease.bat{bottom:18%}
-    .crease.bowl{bottom:30%}
-
-    /* Wickets (left: batsman end, right: bowler end) */
-    .wickets{
-      position:absolute;bottom:16%;
-      width:54%;
-      left:50%;transform: translateX(-50%);
-      display:flex;justify-content:space-between;
-      pointer-events:none;
-    }
-    .stumps{
-      width:44px;height:72px;position:relative;
-      display:flex;gap:6px;align-items:flex-end;
-      filter: drop-shadow(0 10px 18px rgba(0,0,0,.32));
-    }
-    .stumps .s{
-      width:10px;height:72px;border-radius:6px;
-      background: rgba(255,255,255,.22);
-      border:1px solid rgba(255,255,255,.10);
-    }
-    .stumps .bail{
-      position:absolute;left:6px;top:6px;
-      width:34px;height:8px;border-radius:6px;
-      background: rgba(255,255,255,.18);
-      border:1px solid rgba(255,255,255,.10);
-      transform-origin: 50% 50%;
-    }
-
-    /* Player avatars (simple, colorful) */
-    .player{
-      position:absolute;
-      width:64px;height:92px;
-      filter: drop-shadow(0 10px 18px rgba(0,0,0,.35));
-      transform-origin: 50% 85%;
-    }
-    .player .head{
-      width:22px;height:22px;border-radius:50%;
-      background: rgba(234,240,255,.92);
-      border:1px solid rgba(255,255,255,.14);
-      position:absolute;left:21px;top:6px;
-    }
-    .player .body{
-      width:44px;height:46px;border-radius:16px;
-      position:absolute;left:10px;top:28px;
-      border:1px solid rgba(255,255,255,.12);
-    }
-    .player .legs{
-      position:absolute;left:14px;top:72px;display:flex;gap:8px;
-    }
-    .player .leg{
-      width:12px;height:22px;border-radius:10px;
-      background: rgba(255,255,255,.20);
-      border:1px solid rgba(255,255,255,.10);
-    }
-
-    /* Batsman (left end) */
-    #batsman{left:19%;bottom:17%}
-    #batsman .body{
-      background: linear-gradient(180deg, rgba(106,168,255,.90), rgba(106,168,255,.35));
-      border-color: rgba(106,168,255,.25);
-    }
-    .bat{
-      position:absolute;left:50px;top:44px;
-      width:10px;height:56px;border-radius:10px;
-      background: linear-gradient(180deg, rgba(255,209,102,.95), rgba(255,209,102,.35));
-      border:1px solid rgba(255,209,102,.25);
-      transform-origin: 50% 10%;
-      transform: rotate(18deg);
-    }
-
-    /* Non-striker (near bowler end, but on left side of strip) */
-    #nonStriker{left:46%;bottom:28%}
-    #nonStriker .body{
-      background: linear-gradient(180deg, rgba(46,229,157,.88), rgba(46,229,157,.30));
-      border-color: rgba(46,229,157,.25);
-    }
-
-    /* Bowler (right end) */
-    #bowler{left:74%;bottom:22%}
-    #bowler .body{
-      background: linear-gradient(180deg, rgba(255,90,122,.78), rgba(255,90,122,.25));
-      border-color: rgba(255,90,122,.22);
-    }
-    .arm{
-      position:absolute;left:48px;top:40px;
-      width:10px;height:34px;border-radius:10px;
-      background: rgba(234,240,255,.22);
-      border:1px solid rgba(255,255,255,.10);
-      transform-origin: 50% 10%;
-      transform: rotate(18deg);
-    }
-
-    /* Ball + trail */
-    .ball{
-      position:absolute;
-      width:12px;height:12px;border-radius:50%;
-      background: radial-gradient(circle at 35% 35%, rgba(255,255,255,.95), rgba(255,255,255,.30));
-      border:1px solid rgba(255,255,255,.18);
-      opacity:0;
-      filter: drop-shadow(0 8px 12px rgba(0,0,0,.35));
-      left:72%;
-      bottom:30%;
-      transform: translate(-50%,-50%);
-    }
-    .trail{
-      position:absolute;
-      width:92px;height:9px;
-      border-radius: 999px;
-      background: linear-gradient(90deg, rgba(106,168,255,0), rgba(106,168,255,.55));
-      opacity:0;
-      pointer-events:none;
-      transform-origin: 0% 50%;
-      filter: blur(.3px);
-    }
-
-    /* Banner */
-    .banner{
-      position:absolute;
-      left:50%;top:14%;
-      transform: translateX(-50%) scale(.96);
-      padding:10px 14px;
-      border-radius: 999px;
-      border:1px solid rgba(255,255,255,.14);
-      background: rgba(9,14,27,.76);
-      box-shadow: var(--shadow);
-      font-weight:1000;
-      letter-spacing:.8px;
-      opacity:0;
-      pointer-events:none;
-      transition: opacity .16s ease, transform .16s ease;
-    }
-    .banner.show{opacity:1; transform: translateX(-50%) scale(1)}
-    .banner.good{color:var(--good)}
-    .banner.bad{color:var(--bad)}
-    .banner.warn{color:var(--warn)}
-
-    /* Confetti */
-    .confetti{position:absolute;inset:0;pointer-events:none;opacity:0}
-    .confetti.show{opacity:1; animation: fadeConf 900ms ease forwards}
-    @keyframes fadeConf{0%{opacity:0}10%{opacity:1}100%{opacity:0}}
-    .confetti .c{
-      position:absolute;width:7px;height:7px;border-radius:2px;
-      animation: fall 900ms ease forwards;
-    }
-    @keyframes fall{
-      0%{transform: translateY(-10px) rotate(0deg);opacity:1}
-      100%{transform: translateY(130px) rotate(260deg);opacity:0}
-    }
-
-    /* Animations (CSS classes toggled) */
-    .runup{ animation: runUp 520ms ease-out forwards; }
-    @keyframes runUp{
-      0%{transform: translateX(0) rotate(0deg)}
-      60%{transform: translateX(-10px) rotate(-2deg)}
-      100%{transform: translateX(-14px) rotate(0deg)}
-    }
-    .release .arm{ animation: armThrow 420ms ease-out forwards; }
-    @keyframes armThrow{
-      0%{transform: rotate(18deg)}
-      55%{transform: rotate(-55deg)}
-      100%{transform: rotate(10deg)}
-    }
-    .swing .bat{ animation: batSwing 420ms ease-out forwards; }
-    @keyframes batSwing{
-      0%{transform: rotate(18deg)}
-      55%{transform: rotate(-45deg)}
-      100%{transform: rotate(8deg)}
-    }
-    .wicketShake{ animation: shake 420ms ease-in-out 1; }
-    @keyframes shake{
-      0%{transform: translateX(0)}
-      20%{transform: translateX(-4px)}
-      40%{transform: translateX(4px)}
-      60%{transform: translateX(-3px)}
-      80%{transform: translateX(3px)}
-      100%{transform: translateX(0)}
-    }
-    .bailFly{ animation: bailFly 520ms ease-out forwards; }
-    @keyframes bailFly{
-      0%{transform: translateY(0) rotate(0deg);opacity:1}
-      100%{transform: translate(22px,-26px) rotate(260deg);opacity:0}
-    }
-
-    /* Score box */
     .scorebox{
       background: rgba(255,255,255,.05);
       border:1px solid var(--line);
@@ -414,9 +163,11 @@
       min-height:64px;
     }
     .stat .lbl{color:var(--muted);font-size:11px}
-    .stat .val{font-size:18px;font-weight:900;margin-top:4px}
+    .stat .val{font-size:18px;font-weight:950;margin-top:4px}
+    .hr{height:1px;background:var(--line);margin:12px 0}
+    .small{font-size:12px;color:var(--muted)}
 
-    /* === QUIZ SCREEN === */
+    /* Quiz */
     .qcard{
       background: rgba(255,255,255,.05);
       border:1px solid var(--line);
@@ -425,21 +176,18 @@
     }
     .qmeta{
       display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
-      margin-bottom:10px;
-      color:var(--muted);font-size:12px;
+      margin-bottom:10px;color:var(--muted);font-size:12px;
     }
-    .qtext{font-size:15px;line-height:1.35;font-weight:850;margin-bottom:12px}
+    .qtext{font-size:15px;line-height:1.35;font-weight:950;margin-bottom:12px}
     .opts{display:grid;grid-template-columns:1fr;gap:10px}
     .btn{
       width:100%;
-      border:none;
-      border-radius: 16px;
+      border:none;border-radius: 16px;
       padding:12px 12px;
       background: rgba(255,255,255,.06);
       border:1px solid var(--line);
       color: var(--ink);
-      font-size:14px;
-      text-align:left;
+      font-size:14px;text-align:left;
       cursor:pointer;
       transition: transform .05s ease, background .12s ease;
       display:flex;gap:10px;align-items:flex-start;
@@ -452,11 +200,11 @@
       display:grid;place-items:center;
       background: rgba(106,168,255,.18);
       border:1px solid rgba(106,168,255,.25);
-      font-weight:900;flex:0 0 auto;margin-top:1px;
+      font-weight:950;flex:0 0 auto;margin-top:1px;
     }
     .btn .txt{flex:1}
-
     .controls{display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between;margin-top:12px}
+
     .toast{
       margin-top:12px;
       border:1px solid var(--line);
@@ -466,23 +214,22 @@
       display:none;
     }
     .toast.show{display:block}
-    .toast .t{font-weight:1000}
-    .toast.good .t{color:var(--good)}
+    .toast .t{font-weight:950}
+    .toast.good .t{color:var(--accent2)}
     .toast.bad .t{color:var(--bad)}
     .toast .m{margin-top:6px;color:var(--muted);font-size:13px;line-height:1.45}
     .toast .m b{color:var(--warn)}
 
     /* Modal */
     .modal{
-      position:fixed;inset:0;
-      background: rgba(0,0,0,.55);
+      position:fixed;inset:0;background: rgba(0,0,0,.55);
       display:none;align-items:center;justify-content:center;
       padding:16px;z-index:50;
     }
     .modal.show{display:flex}
     .modal .box{
       width:min(900px, 96vw);
-      background: linear-gradient(180deg, rgba(15,27,53,.98), rgba(10,18,40,.98));
+      background: linear-gradient(180deg, rgba(14,26,51,.98), rgba(9,16,36,.98));
       border:1px solid var(--line);
       border-radius: 22px;
       box-shadow: var(--shadow);
@@ -492,7 +239,7 @@
       padding:14px 16px;border-bottom:1px solid var(--line);
       display:flex;align-items:center;justify-content:space-between;gap:10px;
     }
-    .modal .box .hd .ttl{font-weight:1000}
+    .modal .box .hd .ttl{font-weight:950}
     .modal .box .bd{padding:14px 16px;color:var(--muted);font-size:13px;line-height:1.55}
     .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
     @media (max-width: 700px){ .grid2{grid-template-columns:1fr} }
@@ -503,193 +250,134 @@
       padding:12px;
     }
     .cardmini b{color:var(--ink)}
-    .hr{height:1px;background:var(--line);margin:12px 0}
-    .small{font-size:12px;color:var(--muted)}
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <div class="brand">
-        <div class="logo">🏏</div>
-        <div class="title">
-          <h1>Gully Cricket Quiz — Cyber Safety</h1>
-          <p>Flip screens: MCQ → Animation → MCQ • E-Wallet & Micro-ATM Security</p>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="logo">🏏</div>
+      <div class="title">
+        <h1>Gully Cricket Quiz — High Graphics (No Flicker)</h1>
+        <p>MCQ → Canvas pitch animation → MCQ • Bowler deliver, runs, boundary, wicket</p>
+      </div>
+    </div>
+    <div class="topRight">
+      <span class="pill">Balls/Over: <b id="bpoTop">6</b></span>
+      <button class="ghost" id="howBtn" type="button">How to play</button>
+      <button class="primary" id="startBtn" type="button">Start / Restart</button>
+    </div>
+  </header>
+
+  <div class="stage">
+    <!-- QUIZ -->
+    <section class="screen show" id="quizScreen">
+      <div class="panel">
+        <div class="hd">
+          <div>
+            <div class="kicker">Question Screen</div>
+            <div class="big">Answer to play the next ball</div>
+          </div>
+          <div class="pill">One attempt only</div>
+        </div>
+        <div class="bd">
+          <div class="qcard">
+            <div class="qmeta">
+              <span id="topicLbl">Topic: —</span>
+              <span id="qCountLbl">0 / 0</span>
+            </div>
+            <div class="qtext" id="qText">Press Start to load the first question.</div>
+
+            <div class="opts" id="opts">
+              <button class="btn" disabled><span class="tag">A</span><span class="txt">—</span></button>
+              <button class="btn" disabled><span class="tag">B</span><span class="txt">—</span></button>
+              <button class="btn" disabled><span class="tag">C</span><span class="txt">—</span></button>
+              <button class="btn" disabled><span class="tag">D</span><span class="txt">—</span></button>
+            </div>
+
+            <div class="controls">
+              <button class="ghost" id="skipBtn" type="button">Skip ball</button>
+              <button class="ghost" id="endBtn" type="button">End innings</button>
+            </div>
+
+            <div class="toast" id="toast">
+              <div class="t" id="toastT">Correct!</div>
+              <div class="m" id="toastM">—</div>
+            </div>
+
+            <div class="hr"></div>
+            <div class="small">After you answer, the pitch animation will show the outcome, then returns to the next MCQ.</div>
+          </div>
         </div>
       </div>
-      <div class="topRight">
-        <span class="pill">Balls/Over: <b id="bpoTop">6</b></span>
-        <button class="ghost" id="howBtn" type="button">How to play</button>
-        <button class="primary" id="startBtn" type="button">Start / Restart</button>
-      </div>
-    </header>
+    </section>
 
-    <div class="stage">
-      <!-- QUIZ SCREEN -->
-      <section class="screen show" id="quizScreen">
-        <div class="panel">
-          <div class="hd">
-            <div class="left">
-              <div class="kicker">Question Screen</div>
-              <div class="big">Answer to play the next ball</div>
-            </div>
-            <div class="pill">One attempt only</div>
+    <!-- GAME -->
+    <section class="screen" id="gameScreen">
+      <div class="panel">
+        <div class="hd">
+          <div>
+            <div class="kicker">Game Screen</div>
+            <div class="big">Bowler delivers → Bat → Run / Boundary / Out</div>
           </div>
-          <div class="bd">
-            <div class="qcard">
-              <div class="qmeta">
-                <span id="topicLbl">Topic: —</span>
-                <span id="qCountLbl">0 / 0</span>
-              </div>
-              <div class="qtext" id="qText">Press Start to load the first question.</div>
+          <div class="pill">Auto return to MCQ</div>
+        </div>
+        <div class="bd">
+          <div class="gameLayout">
+            <div class="canvasWrap">
+              <canvas id="pitch"></canvas>
+            </div>
 
-              <div class="opts" id="opts">
-                <button class="btn" disabled><span class="tag">A</span><span class="txt">—</span></button>
-                <button class="btn" disabled><span class="tag">B</span><span class="txt">—</span></button>
-                <button class="btn" disabled><span class="tag">C</span><span class="txt">—</span></button>
-                <button class="btn" disabled><span class="tag">D</span><span class="txt">—</span></button>
+            <div class="scorebox">
+              <div class="scoreTop">
+                <div class="chip">Over: <b id="overLbl">0</b></div>
+                <div class="chip">Ball: <b id="ballLbl">0</b>/<b id="bpoLbl">6</b></div>
+                <div class="chip">Wickets: <b id="wktLbl">0</b>/<b id="wktMaxLbl">2</b></div>
+                <div class="chip">Runs: <b id="runsLbl">0</b></div>
               </div>
+              <div class="ballDots" id="ballDots"></div>
 
-              <div class="controls">
-                <button class="ghost" id="skipBtn" type="button" title="Dot ball (skip question)">Skip ball</button>
-                <button class="ghost" id="endBtn" type="button" title="End and show summary">End innings</button>
-              </div>
-
-              <div class="toast" id="toast">
-                <div class="t" id="toastT">Correct!</div>
-                <div class="m" id="toastM">—</div>
+              <div class="stats">
+                <div class="stat"><div class="lbl">Accuracy</div><div class="val" id="accLbl">0%</div></div>
+                <div class="stat"><div class="lbl">Correct</div><div class="val" id="okLbl">0</div></div>
+                <div class="stat"><div class="lbl">Wrong</div><div class="val" id="badLbl">0</div></div>
+                <div class="stat"><div class="lbl">Strike Rate</div><div class="val" id="srLbl">0</div></div>
               </div>
 
               <div class="hr"></div>
-              <div class="small">
-                Note: After you answer, the game switches to the pitch animation to show the outcome.
-              </div>
+              <div class="small" id="gameMsg">Waiting…</div>
             </div>
           </div>
         </div>
-      </section>
-
-      <!-- GAME SCREEN -->
-      <section class="screen" id="gameScreen">
-        <div class="panel">
-          <div class="hd">
-            <div class="left">
-              <div class="kicker">Game Screen</div>
-              <div class="big">Bowler delivers → Bat → Runs / Boundary / Out</div>
-            </div>
-            <div class="pill">Auto returns to next MCQ</div>
-          </div>
-          <div class="bd">
-            <div class="gameLayout">
-              <div class="scene" id="scene">
-                <div class="lights"></div>
-                <div class="crowd"></div>
-
-                <div class="boundary"></div>
-                <div class="grass"></div>
-
-                <div class="pitchStrip"></div>
-                <div class="crease bowl"></div>
-                <div class="crease bat"></div>
-
-                <div class="wickets">
-                  <div class="stumps" id="stumpsBat">
-                    <div class="bail" id="bailBat"></div>
-                    <div class="s"></div><div class="s"></div><div class="s"></div>
-                  </div>
-                  <div class="stumps" id="stumpsBowl">
-                    <div class="bail" id="bailBowl"></div>
-                    <div class="s"></div><div class="s"></div><div class="s"></div>
-                  </div>
-                </div>
-
-                <div class="player" id="batsman" aria-hidden="true">
-                  <div class="head"></div>
-                  <div class="body"></div>
-                  <div class="legs"><div class="leg"></div><div class="leg"></div></div>
-                  <div class="bat" id="bat"></div>
-                </div>
-
-                <div class="player" id="nonStriker" aria-hidden="true">
-                  <div class="head"></div>
-                  <div class="body"></div>
-                  <div class="legs"><div class="leg"></div><div class="leg"></div></div>
-                </div>
-
-                <div class="player" id="bowler" aria-hidden="true">
-                  <div class="head"></div>
-                  <div class="body"></div>
-                  <div class="legs"><div class="leg"></div><div class="leg"></div></div>
-                  <div class="arm" id="arm"></div>
-                </div>
-
-                <div class="ball" id="ball"></div>
-                <div class="trail" id="trail"></div>
-
-                <div class="banner" id="banner">SIX!</div>
-                <div class="confetti" id="confetti"></div>
-              </div>
-
-              <div class="scorebox">
-                <div class="scoreTop">
-                  <div class="chip">Over: <b id="overLbl">0</b></div>
-                  <div class="chip">Ball: <b id="ballLbl">0</b>/<b id="bpoLbl">6</b></div>
-                  <div class="chip">Wickets: <b id="wktLbl">0</b>/<b id="wktMaxLbl">2</b></div>
-                  <div class="chip">Runs: <b id="runsLbl">0</b></div>
-                </div>
-
-                <div class="ballDots" id="ballDots" aria-label="Ball indicators"></div>
-
-                <div class="stats">
-                  <div class="stat"><div class="lbl">Accuracy</div><div class="val" id="accLbl">0%</div></div>
-                  <div class="stat"><div class="lbl">Correct</div><div class="val" id="okLbl">0</div></div>
-                  <div class="stat"><div class="lbl">Wrong</div><div class="val" id="badLbl">0</div></div>
-                  <div class="stat"><div class="lbl">Strike Rate</div><div class="val" id="srLbl">0</div></div>
-                </div>
-
-                <div class="hr"></div>
-                <div class="small" id="gameMsg">
-                  Waiting for answer…
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-    </div>
-  </div>
-
-  <!-- HOW TO PLAY -->
-  <div class="modal" id="modal">
-    <div class="box">
-      <div class="hd">
-        <div class="ttl">How to play</div>
-        <button class="ghost" id="closeHow" type="button">Close</button>
       </div>
-      <div class="bd">
-        <div class="cardmini">
-          <b>Flow:</b> You answer an MCQ → the game switches to the pitch animation to show the result → it returns to the next MCQ.
-        </div>
+    </section>
 
-        <div class="grid2">
-          <div class="cardmini"><b>Correct:</b> runs (1/2) or boundaries (4/6) with animations.</div>
-          <div class="cardmini"><b>Wrong:</b> dot ball or wicket (OUT) for critical safety mistakes.</div>
-          <div class="cardmini"><b>No timer:</b> calm reading and feedback is the focus.</div>
-          <div class="cardmini"><b>Skip:</b> dot ball, then next question.</div>
-        </div>
+  </div>
+</div>
 
-        <div class="hr"></div>
-        <div class="small">
-          Designed for MOOCs: low cognitive load, clear feedback, visible game outcome.
-        </div>
+<!-- HOW TO PLAY -->
+<div class="modal" id="modal">
+  <div class="box">
+    <div class="hd">
+      <div class="ttl">How to play</div>
+      <button class="ghost" id="closeHow" type="button">Close</button>
+    </div>
+    <div class="bd">
+      <div class="cardmini"><b>Flow:</b> MCQ → Canvas cricket animation → MCQ.</div>
+      <div class="grid2">
+        <div class="cardmini"><b>Correct:</b> 1/2 runs (running), 4 (boundary), 6 (sixer).</div>
+        <div class="cardmini"><b>Wrong:</b> dot ball or wicket (OUT) for critical mistakes.</div>
+        <div class="cardmini"><b>No timer:</b> comfortable for MOOC learners.</div>
+        <div class="cardmini"><b>Skip:</b> dot ball.</div>
       </div>
     </div>
   </div>
+</div>
 
 <script>
-/***********************
- * Question bank (from your text)
- ***********************/
+/* =========================
+   QUESTION BANK (from your text)
+   ========================= */
 const QUESTIONS = [
   { topic:"E-Wallet Basics", q:"An e-wallet is best described as:", choices:[
     "A physical wallet with a chip inside",
@@ -697,20 +385,6 @@ const QUESTIONS = [
     "A bank branch counter service",
     "A device used only for printing receipts"
   ], answer:1, explain:"An e-wallet is an electronic application used for e-commerce transactions via phone/computer.", difficulty:1 },
-
-  { topic:"E-Wallet Basics", q:"Which activity is commonly supported by e-wallets?", choices:[
-    "Booking flights and paying utility bills",
-    "Replacing SIM cards at operator outlets",
-    "Repairing mobile hardware",
-    "Issuing passports"
-  ], answer:0, explain:"E-wallets support purchases, bill payment, transfers, and bookings such as flights.", difficulty:1 },
-
-  { topic:"E-Wallet Data", q:"E-wallets can store which type of information permanently, making protection important?", choices:[
-    "Only public news articles",
-    "Personally identifiable information (name, phone) and sensitive details (card numbers, PIN, credentials)",
-    "Only device wallpaper settings",
-    "Only offline music playlists"
-  ], answer:1, explain:"E-wallets may store PII plus sensitive financial details, so strong security is essential.", difficulty:2 },
 
   { topic:"E-Wallet Security Mechanisms", q:"Which mechanisms are mentioned as part of the payment process security for e-wallets?", choices:[
     "Certificate pinning and encryption",
@@ -726,54 +400,12 @@ const QUESTIONS = [
     "Encrypt the victim’s phone automatically"
   ], answer:0, explain:"With a duplicate SIM, the fraudster can receive/generate OTPs and complete transactions.", difficulty:3 },
 
-  { topic:"SIM Swap & Impersonation", q:"A key preventive message about social engineering in financial services is:", choices:[
-    "Support staff will always ask for passwords to verify identity",
-    "Genuine providers/support staff will not ask for passwords or account numbers via email/phone",
-    "Sharing PIN over SMS is safe if the sender is polite",
-    "Only desktops are targeted, phones are not"
-  ], answer:1, explain:"Providers/support staff should never ask for private info like passwords or account numbers.", difficulty:2 },
-
-  { topic:"SIM Swap & Alerts", q:"Some mobile operators send an SMS to alert customers about:", choices:[
-    "A SIM swap event",
-    "A new phone model release",
-    "Free movie tickets",
-    "Printer driver updates"
-  ], answer:0, explain:"An SMS alert about SIM swap can help the customer act quickly to stop fraud.", difficulty:1 },
-
-  { topic:"SIM Swap & Response", q:"If you receive a SIM swap alert and you did not request it, the best immediate action is to:", choices:[
-    "Ignore it and wait for a week",
-    "Contact the mobile operator immediately to stop the fraud",
-    "Share your wallet password to verify yourself",
-    "Turn off your phone for a full day"
-  ], answer:1, explain:"The text recommends contacting the operator immediately to stop SIM swap fraud quickly.", difficulty:2 },
-
-  { topic:"Phishing & MITM", q:"Man-in-the-Middle / Man-in-the-Browser attacks commonly:", choices:[
-    "Intercept transactions and read payment data while the user is typing details",
-    "Increase the brightness of the screen",
-    "Repair corrupted video files",
-    "Upgrade the SIM card automatically"
-  ], answer:0, explain:"These attacks intercept online transactions and can read data entered in the browser.", difficulty:3 },
-
   { topic:"Phishing & Verification", q:"To verify a website’s authenticity, the content recommends checking:", choices:[
     "The browser’s digital certificate (padlock/certificates)",
     "Only the website’s color theme",
     "The number of ads on the page",
     "The time zone shown in the footer"
   ], answer:0, explain:"Verify the site by validating its digital certificate (padlock/certificates in browser).", difficulty:2 },
-
-  { topic:"Phishing & Messages", q:"Emails or texts asking you to confirm/share sensitive information like PIN, CVV, or passwords should be:", choices:[
-    "Ignored",
-    "Forwarded to all contacts",
-    "Answered quickly to avoid account block",
-    "Saved as screenshots and shared publicly"
-  ], answer:0, explain:"Such messages should be ignored as they are typical phishing attempts.", difficulty:2 },
-
-  { topic:"Malware on Apps", q:"Malware attacks on wallet apps are risky because malware can:", choices:[
-    "Collect details from the phone to misuse them",
-    "Only slow down the screen rotation",
-    "Only affect ringtone volume",
-    "Only change wallpaper settings"
-  ], answer:0, explain:"The text says malware can collect details from the phone and be misused.", difficulty:2 },
 
   { topic:"Malware Prevention", q:"One key prevention against malware attacks is to:", choices:[
     "Keep the wallet software and device software up to date",
@@ -782,61 +414,12 @@ const QUESTIONS = [
     "Share device passcode with friends"
   ], answer:0, explain:"Updates deliver important security fixes and help keep the environment safer.", difficulty:1 },
 
-  { topic:"Security Tools", q:"Which combination best matches the recommended security software approach?", choices:[
-    "Firewalls + virus/malware detection + intrusion detection + mobile security solutions",
-    "Only a photo editor",
-    "Only a music player",
-    "Only a screen recorder"
-  ], answer:0, explain:"The content recommends a range of security tools including firewall, AV/malware, IDS, and mobile security.", difficulty:2 },
-
-  { topic:"User Best Practices", q:"Before using e-wallets, users should enable:", choices:[
-    "Strong device passwords and additional security layers",
-    "Auto-login without any lock screen",
-    "Open Bluetooth always",
-    "A public profile with all personal details"
-  ], answer:0, explain:"Strong device passwords and extra security layers reduce unauthorized access risk.", difficulty:1 },
-
   { topic:"Network Safety", q:"Which network practice is recommended for safer e-wallet usage?", choices:[
     "Use only trusted networks and avoid public Wi-Fi",
     "Prefer open public Wi-Fi for convenience",
     "Disable Wi-Fi passwords for easy access",
     "Use any network; encryption is unnecessary"
   ], answer:0, explain:"Use trusted networks; avoid public Wi-Fi; prefer secured Wi-Fi like WPA/WPA2 with strong passwords.", difficulty:2 },
-
-  { topic:"App Source Trust", q:"A good practice before installing an e-wallet app is to:", choices:[
-    "Install from trusted sources and check ratings/reviews",
-    "Install from any random link shared in a message",
-    "Avoid reading reviews to save time",
-    "Disable permissions warnings permanently"
-  ], answer:0, explain:"Ratings/reviews and trusted sources help judge integrity and support.", difficulty:1 },
-
-  { topic:"Credentials Safety", q:"Keeping login credentials secure means you should avoid:", choices:[
-    "Writing them down in plain view or storing them in an unprotected file",
-    "Using device lock screens",
-    "Enabling alerts",
-    "Changing passwords"
-  ], answer:0, explain:"Do not store credentials insecurely where they can be misused.", difficulty:2 },
-
-  { topic:"Password Hygiene", q:"A recommended password practice for a digital wallet is to:", choices:[
-    "Use a unique, hard-to-guess password for the wallet",
-    "Reuse the same password everywhere",
-    "Use your name and birth year",
-    "Share the password with support staff"
-  ], answer:0, explain:"Unique, hard-to-guess passwords reduce unauthorized access risk.", difficulty:2 },
-
-  { topic:"Alerts & Vigilance", q:"If you stop receiving calls/SMS for a long time during wallet usage, the content suggests you should:", choices:[
-    "Check with your mobile operator to ensure connectivity was not tampered with",
-    "Assume everything is fine and ignore it",
-    "Post your wallet details on social media to test",
-    "Factory reset the phone immediately without backup"
-  ], answer:0, explain:"Lack of calls/SMS could indicate tampering; verify with operator.", difficulty:3 },
-
-  { topic:"Fraud Response", q:"In case of suspected fraud, loss of phone, or account hacking, users should:", choices:[
-    "Know the points of contact and contact provider/bank promptly",
-    "Wait until the next month’s statement",
-    "Share OTP publicly for faster help",
-    "Ignore terms and conditions completely"
-  ], answer:0, explain:"Know the right contacts and act quickly; understand provider terms and conditions.", difficulty:2 },
 
   { topic:"Micro ATM Basics", q:"Micro ATMs are best described as:", choices:[
     "PoS devices that use minimal power and connect to banking servers via GPRS",
@@ -845,54 +428,12 @@ const QUESTIONS = [
     "Devices used only for printing passbooks"
   ], answer:0, explain:"Micro ATMs are PoS devices with low power needs connecting via GPRS to banking servers.", difficulty:1 },
 
-  { topic:"Micro ATM Transactions", q:"Which set of transactions is mentioned as supported by micro ATMs?", choices:[
-    "Deposit, withdrawal, funds transfer, balance enquiry/mini-statement",
-    "Only gaming and video streaming",
-    "Only passport renewal",
-    "Only mobile recharge"
-  ], answer:0, explain:"Micro ATMs support deposit/withdrawal/transfer/enquiry.", difficulty:1 },
-
-  { topic:"Micro ATM Authentication", q:"Which authentication option is explicitly listed for micro ATM interoperable transactions?", choices:[
-    "Aadhaar + Biometric",
-    "Only face recognition without Aadhaar",
-    "Only email password",
-    "Only social media login"
-  ], answer:0, explain:"Aadhaar + Biometric is listed among supported authentication mechanisms.", difficulty:1 },
-
-  { topic:"Micro ATM Authentication", q:"Which combination is listed as an option for card-based authentication?", choices:[
-    "Magnetic stripe card + Bank PIN",
-    "Magnetic stripe card + birthday",
-    "Magnetic stripe card + public Wi-Fi",
-    "Magnetic stripe card + screenshot"
-  ], answer:0, explain:"Magnetic stripe card + Bank PIN is listed as an authentication means.", difficulty:2 },
-
   { topic:"POS Data Vulnerabilities", q:"The three key areas of POS data vulnerability highlighted are data:", choices:[
     "In memory, in transit, and at rest",
     "In photos, in songs, and in videos",
     "In chat, in calls, and in games",
     "In weather, in maps, and in calendars"
   ], answer:0, explain:"The text highlights data in memory, data in transit, and data at rest.", difficulty:2 },
-
-  { topic:"Data in Memory", q:"Why is data in memory hard to defend at a POS system?", choices:[
-    "If an attacker has access to the POS system, memory can be exposed",
-    "Because memory is always encrypted by default",
-    "Because the network cable is always cut",
-    "Because screenshots block attackers"
-  ], answer:0, explain:"If an attacker can access the POS system, memory exposure is difficult to prevent.", difficulty:3 },
-
-  { topic:"Encryption Strategy", q:"To reduce the risk of memory scrapers, the content recommends:", choices:[
-    "Encrypt card data as soon as possible and keep it encrypted through its lifecycle",
-    "Store track data in clear text for faster processing",
-    "Disable encryption to reduce CPU usage",
-    "Share the encryption key in a public group"
-  ], answer:0, explain:"Encrypt early and keep it encrypted to reduce exposure; P2PE can help.", difficulty:3 },
-
-  { topic:"P2PE", q:"Point-to-Point Encryption (P2PE) is suggested to address:", choices:[
-    "Encrypting card data early and keeping it protected",
-    "Making the POS screen brighter",
-    "Speeding up video buffering",
-    "Printing larger receipts"
-  ], answer:0, explain:"P2PE helps keep card data encrypted as early as possible.", difficulty:3 },
 
   { topic:"Skimming", q:"Skimming refers to:", choices:[
     "Theft of card information using a small device near the card acceptance slot",
@@ -901,113 +442,40 @@ const QUESTIONS = [
     "Compressing files on a device"
   ], answer:0, explain:"Skimming steals card data using a small device near the acceptance slot.", difficulty:2 },
 
-  { topic:"Skimming Prevention", q:"Before using a micro ATM, users should ensure:", choices:[
-    "No strange objects are attached near the card insertion panel",
-    "The machine is placed near a window",
-    "The screen is set to maximum brightness",
-    "The receipt paper is brand new"
-  ], answer:0, explain:"Strange objects may indicate skimming devices.", difficulty:2 },
-
-  { topic:"Social Engineering", q:"In micro ATM contexts, social engineering often involves the fraudster:", choices:[
-    "Posing as staff, offering help, and gaining trust to obtain sensitive details",
-    "Repairing the ATM internally as a technician",
-    "Encrypting the bank’s servers",
-    "Only changing printer cartridges"
-  ], answer:0, explain:"Fraudsters may pose as staff to gain trust and extract information.", difficulty:2 },
-
-  { topic:"User Behavior", q:"A safe practice while entering an ATM PIN is to:", choices:[
-    "Cover the PIN pad while typing",
-    "Say the PIN aloud to remember it",
-    "Type the PIN slowly and announce each digit",
-    "Send the PIN via SMS to yourself"
-  ], answer:0, explain:"Covering the PIN pad reduces observation risk.", difficulty:1 },
-
-  { topic:"Micro ATM Best Practices", q:"Which is a recommended user best practice after transactions?", choices:[
-    "Destroy/shred receipts securely after reviewing",
-    "Keep receipts visible on the counter",
-    "Share receipts on social media",
-    "Avoid checking receipts at all"
-  ], answer:0, explain:"Receipts can carry sensitive info; destroy them securely after checking.", difficulty:2 },
-
-  { topic:"Micro ATM Best Practices", q:"Monitoring bank statements helps because it allows users to:", choices:[
-    "Detect and dispute unauthorized charges/withdrawals quickly",
-    "Increase network speed",
-    "Unlock new phone themes",
-    "Avoid using passwords"
-  ], answer:0, explain:"Statement review helps detect unauthorized activity quickly.", difficulty:1 },
-
-  { topic:"PIN Hygiene", q:"Which practice is explicitly discouraged?", choices:[
-    "Writing the PIN on the credit/debit card",
-    "Changing PIN regularly",
-    "Covering the PIN pad",
-    "Disputing unauthorized transactions promptly"
-  ], answer:0, explain:"Never write the PIN on the card.", difficulty:1 },
-
-  { topic:"Handling Assistance", q:"When a stranger offers help using a micro ATM, the safer behavior is to:", choices:[
-    "Avoid getting carried away and do not hand over your card",
-    "Give them the card and PIN to finish quickly",
-    "Tell them your account details for verification",
-    "Let them keep the card until the next day"
-  ], answer:0, explain:"Do not hand over your card or share sensitive details with strangers.", difficulty:2 },
-
   { topic:"Service Provider Practices", q:"A key best practice for micro ATM service providers is that the device must not:", choices:[
     "Transmit confidential data unencrypted over the network",
     "Use a power adapter",
     "Print mini-statements",
     "Connect to banking servers"
   ], answer:0, explain:"Confidential data must not be transmitted unencrypted on the network.", difficulty:3 },
-
-  { topic:"Service Provider Practices", q:"To reduce misuse, the micro ATM should automatically:", choices:[
-    "Logout the operator and lock itself after inactivity",
-    "Share the session with nearby devices",
-    "Disable authentication checks",
-    "Store PINs in plain text for convenience"
-  ], answer:0, explain:"Auto-logout and lock after inactivity reduces unauthorized use.", difficulty:2 },
-
-  { topic:"Service Provider Practices", q:"Keeping micro ATM software and security tools updated is recommended because:", choices:[
-    "It provides timely security fixes and reduces vulnerabilities",
-    "It makes receipts longer",
-    "It increases the number of ads shown",
-    "It disables encryption automatically"
-  ], answer:0, explain:"Regular updates provide security fixes and help maintain a safer environment.", difficulty:2 },
-
-  { topic:"Customer Education", q:"A best practice for service providers is to:", choices:[
-    "Educate customers about basic functionality and security best practices",
-    "Ask customers to share PIN for faster processing",
-    "Encourage customers to use public Wi-Fi for transactions",
-    "Advise customers to ignore statements and alerts"
-  ], answer:0, explain:"Education reduces unsafe user behavior and social engineering success.", difficulty:1 },
 ];
 
-/***********************
- * Settings (tunable)
- ***********************/
+/* =========================
+   SETTINGS
+   ========================= */
 const SETTINGS = {
   ballsPerOver: 6,
   maxWickets: 2,
-
   wicketChanceEasy: 0.10,
   wicketChanceMed: 0.22,
   wicketChanceHard: 0.40,
 
   // pacing
-  showFeedbackOnQuizMs: 650,      // show brief correctness on quiz before flipping to game
-  gameAnimTotalMs: 1900,          // total game animation duration per ball
-  afterGameToNextQuizMs: 350      // small buffer before showing next question
+  quizConfirmMs: 520,          // tiny confirmation on quiz
+  animTotalMs: 2200,           // total game timeline
+  explainOnQuizMs: 950,        // show explanation on quiz after returning
 };
 
-/***********************
- * State
- ***********************/
-let state, deck, current, locked = false;
+/* =========================
+   STATE + UI
+   ========================= */
+let state, deck, current, locked=false;
 
-const $ = (id) => document.getElementById(id);
+const $ = (id)=>document.getElementById(id);
 
-// Screens
 const quizScreen = $("quizScreen");
 const gameScreen = $("gameScreen");
 
-// Quiz UI
 const topicLbl = $("topicLbl");
 const qCountLbl = $("qCountLbl");
 const qText = $("qText");
@@ -1016,11 +484,10 @@ const toast = $("toast");
 const toastT = $("toastT");
 const toastM = $("toastM");
 
-// Score UI (shared)
 const overLbl = $("overLbl");
 const ballLbl = $("ballLbl");
-const bpoLbl = $("bpoLbl");
-const wktLbl = $("wktLbl");
+const bpoLbl  = $("bpoLbl");
+const wktLbl  = $("wktLbl");
 const wktMaxLbl = $("wktMaxLbl");
 const runsLbl = $("runsLbl");
 const accLbl = $("accLbl");
@@ -1028,25 +495,11 @@ const okLbl = $("okLbl");
 const badLbl = $("badLbl");
 const srLbl = $("srLbl");
 const ballDots = $("ballDots");
-$("bpoTop").textContent = SETTINGS.ballsPerOver;
-
-// Game UI
 const gameMsg = $("gameMsg");
 
-// Animation elements
-const batsman = $("batsman");
-const nonStriker = $("nonStriker");
-const bowler = $("bowler");
-const arm = $("arm");
-const bat = $("bat");
-
-const stumpsBat = $("stumpsBat");
-const bailBat = $("bailBat");
-
-const ball = $("ball");
-const trail = $("trail");
-const banner = $("banner");
-const confetti = $("confetti");
+$("bpoTop").textContent = SETTINGS.ballsPerOver;
+bpoLbl.textContent = SETTINGS.ballsPerOver;
+wktMaxLbl.textContent = SETTINGS.maxWickets;
 
 function shuffle(arr){
   for(let i=arr.length-1;i>0;i--){
@@ -1056,47 +509,36 @@ function shuffle(arr){
   return arr;
 }
 function makeDeck(){
-  deck = shuffle(QUESTIONS.map((q, idx) => ({...q, _id: idx})));
+  deck = shuffle(QUESTIONS.map((q, idx)=>({...q, _id:idx})));
 }
 function resetState(){
-  state = {
-    over: 0,
-    ballInOver: 0,
-    ballsFaced: 0,
-    wickets: 0,
-    runs: 0,
-    correct: 0,
-    wrong: 0,
-    asked: 0,
-    ended: false
-  };
-  locked = false;
-  current = null;
+  state = { over:0, ballInOver:0, ballsFaced:0, wickets:0, runs:0, correct:0, wrong:0, asked:0, ended:false };
+  locked=false; current=null;
   makeDeck();
   renderDots();
   renderAll();
   setToast(false);
-  clearSceneFX(true);
-  setQuestionUI(null, 0, QUESTIONS.length);
+  setQuestionUI(null,0,QUESTIONS.length);
+  flipTo("quiz");
 }
-
 function renderDots(){
-  ballDots.innerHTML = "";
+  ballDots.innerHTML="";
   for(let i=0;i<SETTINGS.ballsPerOver;i++){
-    const d = document.createElement("div");
-    d.className = "dot";
+    const d=document.createElement("div");
+    d.className="dot";
     ballDots.appendChild(d);
   }
   setDots();
 }
 function setDots(){
-  const nodes = [...ballDots.children];
-  nodes.forEach((n, i) => n.className = "dot" + (i < state.ballInOver ? " on" : ""));
+  [...ballDots.children].forEach((n,i)=>{
+    n.className = "dot" + (i < state.ballInOver ? " on":"");
+  });
 }
 function updateDerived(){
   const total = state.correct + state.wrong;
   const acc = total ? Math.round((state.correct/total)*100) : 0;
-  const sr = state.ballsFaced ? Math.round((state.runs/state.ballsFaced)*100) : 0;
+  const sr  = state.ballsFaced ? Math.round((state.runs/state.ballsFaced)*100) : 0;
   accLbl.textContent = acc + "%";
   okLbl.textContent = state.correct;
   badLbl.textContent = state.wrong;
@@ -1105,47 +547,37 @@ function updateDerived(){
 function renderAll(){
   overLbl.textContent = state.over;
   ballLbl.textContent = state.ballInOver;
-  bpoLbl.textContent = SETTINGS.ballsPerOver;
   wktLbl.textContent = state.wickets;
-  wktMaxLbl.textContent = SETTINGS.maxWickets;
   runsLbl.textContent = state.runs;
   setDots();
   updateDerived();
 }
 
 function lockButtons(lock=true){
-  locked = lock;
-  [...opts.querySelectorAll(".btn")].forEach(b => b.disabled = lock || state.ended);
+  locked=lock;
+  [...opts.querySelectorAll(".btn")].forEach(b=>b.disabled = lock || state.ended);
   $("skipBtn").disabled = lock || state.ended;
   $("endBtn").disabled = lock || state.ended;
 }
-
 function setQuestionUI(q, index, total){
   topicLbl.textContent = "Topic: " + (q?.topic || "—");
   qCountLbl.textContent = `${index} / ${total}`;
   qText.textContent = q ? q.q : "Press Start to load the first question.";
 
-  const buttons = [...opts.querySelectorAll(".btn")];
-  const labels = ["A","B","C","D"];
-  buttons.forEach((btn, i) => {
-    const tag = btn.querySelector(".tag");
-    const txt = btn.querySelector(".txt");
-    tag.textContent = labels[i];
-    txt.textContent = q ? q.choices[i] : "—";
+  const buttons=[...opts.querySelectorAll(".btn")];
+  const labels=["A","B","C","D"];
+  buttons.forEach((btn,i)=>{
+    btn.querySelector(".tag").textContent=labels[i];
+    btn.querySelector(".txt").textContent=q ? q.choices[i] : "—";
     btn.disabled = !q || locked || state.ended;
-    btn.onclick = () => handleAnswer(i);
+    btn.onclick = ()=>handleAnswer(i);
   });
 }
-
 function escapeHtml(s){
   return String(s)
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;")
-    .replaceAll("'","&#039;");
+    .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;").replaceAll("'","&#039;");
 }
-
 function setToast(show, kind="good", title="", html=""){
   toast.classList.remove("good","bad","show");
   if(!show) return;
@@ -1153,9 +585,9 @@ function setToast(show, kind="good", title="", html=""){
   toastT.textContent = title;
   toastM.innerHTML = html;
 }
-
-function flipTo(screen){
-  if(screen === "quiz"){
+function flipTo(which){
+  // no display toggling, only opacity (prevents flicker)
+  if(which==="quiz"){
     quizScreen.classList.add("show");
     gameScreen.classList.remove("show");
   }else{
@@ -1164,248 +596,538 @@ function flipTo(screen){
   }
 }
 
-/* Cricket scoring logic */
+/* scoring */
 function difficultyRuns(diff){
-  const r = Math.random();
-  if(diff <= 1) return (r < 0.70 ? 1 : 2);
-  if(diff === 2) return (r < 0.55 ? 2 : 4);
-  return (r < 0.55 ? 4 : 6);
+  const r=Math.random();
+  if(diff<=1) return (r<0.72?1:2);
+  if(diff===2) return (r<0.58?2:4);
+  return (r<0.55?4:6);
 }
 function wicketChance(diff){
-  if(diff <= 1) return SETTINGS.wicketChanceEasy;
-  if(diff === 2) return SETTINGS.wicketChanceMed;
+  if(diff<=1) return SETTINGS.wicketChanceEasy;
+  if(diff===2) return SETTINGS.wicketChanceMed;
   return SETTINGS.wicketChanceHard;
 }
-
 function advanceBallCounters(){
   state.ballInOver += 1;
   state.ballsFaced += 1;
-  if(state.ballInOver >= SETTINGS.ballsPerOver){
-    state.ballInOver = 0;
-  }
+  if(state.ballInOver >= SETTINGS.ballsPerOver) state.ballInOver = 0;
 }
 
-/***********************
- * GAME ANIMATION ENGINE
- ***********************/
-function clearSceneFX(hard=false){
-  // reset classes
-  bowler.classList.remove("runup","release");
-  batsman.classList.remove("swing");
-  stumpsBat.classList.remove("wicketShake");
-  bailBat.classList.remove("bailFly");
+/* =========================
+   CANVAS PITCH ENGINE (smooth graphics)
+   ========================= */
+const canvas = $("pitch");
+const ctx = canvas.getContext("2d");
 
-  banner.classList.remove("show","good","bad","warn");
+let DPR = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+let W=0,H=0;
 
-  // reset ball/trail
-  ball.style.opacity = 0;
-  trail.style.opacity = 0;
-  ball.style.left = "72%";
-  ball.style.bottom = "30%";
-  trail.style.left = "72%";
-  trail.style.bottom = "30%";
-  trail.style.transform = "rotate(0deg)";
-
-  // reset runners
-  if(hard){
-    // striker positions (approx)
-    batsman.style.left = "19%";
-    batsman.style.bottom = "17%";
-    nonStriker.style.left = "46%";
-    nonStriker.style.bottom = "28%";
-  }
-
-  // confetti
-  confetti.classList.remove("show");
-  confetti.innerHTML = "";
+function resizeCanvas(){
+  const rect = canvas.getBoundingClientRect();
+  W = Math.max(320, Math.floor(rect.width));
+  H = Math.max(260, Math.floor(rect.height));
+  canvas.width  = Math.floor(W * DPR);
+  canvas.height = Math.floor(H * DPR);
+  ctx.setTransform(DPR,0,0,DPR,0,0);
 }
+window.addEventListener("resize", ()=>{ resizeCanvas(); });
 
-function showBanner(text, tone){
-  banner.textContent = text;
-  banner.classList.remove("good","bad","warn","show");
-  banner.classList.add(tone, "show");
-  setTimeout(() => banner.classList.remove("show"), 900);
-}
+/* A simple timeline animation controller */
+let anim = {
+  active:false,
+  t0:0,
+  duration:SETTINGS.animTotalMs,
+  outcome:"DOT", // DOT, WICKET, RUN1, RUN2, FOUR, SIX
+  bannerText:"",
+  bannerTone:"good",
+  runs:0,
+  particles:[],
+  // positions (normalized 0..1)
+  bowlerX: 0.78, bowlerY: 0.66,
+  strikerX:0.22, strikerY:0.72,
+  nonX:0.48, nonY:0.58,
+  ballX:0.78, ballY:0.58,
+  ballVisible:false,
+  bailPop:0,
+};
 
-function burstConfetti(){
-  confetti.innerHTML = "";
-  const count = 28;
+function lerp(a,b,t){ return a+(b-a)*t; }
+function clamp01(x){ return Math.max(0, Math.min(1, x)); }
+function easeOutCubic(t){ return 1 - Math.pow(1-t, 3); }
+function easeInOutQuad(t){ return t<0.5 ? 2*t*t : 1 - Math.pow(-2*t+2,2)/2; }
+
+function addParticles(kind){
+  // kind: "confetti" or "spark"
+  const count = (kind==="confetti") ? 38 : 18;
   for(let i=0;i<count;i++){
-    const d = document.createElement("div");
-    d.className = "c";
-    d.style.left = (10 + Math.random()*80) + "%";
-    d.style.top  = (6 + Math.random()*22) + "%";
-    const hue = Math.floor(Math.random()*360);
-    d.style.background = `hsla(${hue}, 92%, 70%, .95)`;
-    d.style.animationDelay = (Math.random()*140) + "ms";
-    confetti.appendChild(d);
+    anim.particles.push({
+      x: 0.5 + (Math.random()*0.25-0.125),
+      y: 0.20 + (Math.random()*0.08-0.04),
+      vx: (Math.random()*0.4-0.2),
+      vy: (Math.random()*0.45+0.15),
+      r: 2 + Math.random()*4,
+      rot: Math.random()*Math.PI,
+      vr: (Math.random()*6-3),
+      life: 0,
+      max: 0.9 + Math.random()*0.5,
+      hue: Math.floor(Math.random()*360),
+      kind
+    });
   }
-  confetti.classList.add("show");
-  setTimeout(() => confetti.classList.remove("show"), 950);
 }
 
-function swingBat(){
-  batsman.classList.remove("swing");
-  void batsman.offsetWidth;
-  batsman.classList.add("swing");
+function startAnimation(outcome, runs){
+  anim.active = true;
+  anim.t0 = performance.now();
+  anim.duration = SETTINGS.animTotalMs;
+  anim.outcome = outcome;
+  anim.runs = runs || 0;
+  anim.particles = [];
+  anim.ballX = anim.bowlerX;
+  anim.ballY = 0.58;
+  anim.ballVisible = false;
+  anim.bailPop = 0;
+
+  // banner config
+  if(outcome==="SIX"){ anim.bannerText="SIX!"; anim.bannerTone="warn"; addParticles("confetti"); }
+  else if(outcome==="FOUR"){ anim.bannerText="FOUR!"; anim.bannerTone="warn"; }
+  else if(outcome==="RUN1"){ anim.bannerText="1 RUN"; anim.bannerTone="good"; }
+  else if(outcome==="RUN2"){ anim.bannerText="2 RUNS"; anim.bannerTone="good"; }
+  else if(outcome==="WICKET"){ anim.bannerText="OUT!"; anim.bannerTone="bad"; }
+  else { anim.bannerText="DOT BALL"; anim.bannerTone="bad"; }
+
+  requestAnimationFrame(tick);
 }
 
-function bowlerDeliver(){
-  bowler.classList.remove("runup","release");
-  void bowler.offsetWidth;
-  bowler.classList.add("runup");
-  setTimeout(() => {
-    bowler.classList.add("release"); // triggers arm throw
-  }, 240);
+function drawRoundedRect(x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);
+  ctx.arcTo(x,y,x+w,y,r);
+  ctx.closePath();
 }
 
-/* Ball path animation with requestAnimationFrame */
-function flyBallPath(start, end, arcUp, duration){
-  ball.style.opacity = 1;
-  trail.style.opacity = 0.95;
-  const startTime = performance.now();
+function drawStadium(){
+  // sky gradient
+  const sky = ctx.createLinearGradient(0,0,0,H);
+  sky.addColorStop(0,"rgba(10,20,45,1)");
+  sky.addColorStop(0.55,"rgba(7,16,34,1)");
+  sky.addColorStop(1,"rgba(6,12,26,1)");
+  ctx.fillStyle = sky;
+  ctx.fillRect(0,0,W,H);
 
-  function step(t){
-    const p = Math.min(1, (t - startTime)/duration);
-    const e = 1 - Math.pow(1-p, 3); // ease-out
-    const mid = 0.5;
-    const arc = arcUp * (1 - Math.pow((p - mid)/mid, 2)); // parabola
+  // stadium light glow
+  const glow = ctx.createRadialGradient(W*0.2, H*0.12, 10, W*0.2, H*0.12, W*0.45);
+  glow.addColorStop(0,"rgba(255,255,255,.12)");
+  glow.addColorStop(1,"rgba(255,255,255,0)");
+  ctx.fillStyle = glow;
+  ctx.fillRect(0,0,W,H);
 
-    const x = start.x + (end.x - start.x)*e;
-    const y = start.y + (end.y - start.y)*e + arc;
+  const glow2 = ctx.createRadialGradient(W*0.8, H*0.14, 10, W*0.8, H*0.14, W*0.5);
+  glow2.addColorStop(0,"rgba(255,255,255,.10)");
+  glow2.addColorStop(1,"rgba(255,255,255,0)");
+  ctx.fillStyle = glow2;
+  ctx.fillRect(0,0,W,H);
 
-    ball.style.left = x + "%";
-    ball.style.bottom = y + "%";
+  // crowd band
+  ctx.globalAlpha = 0.82;
+  ctx.fillStyle = "rgba(0,0,0,.32)";
+  ctx.fillRect(0,0,W,H*0.22);
 
-    const dx = (end.x - start.x);
-    const dy = (end.y - start.y);
-    const ang = Math.atan2(dy, dx) * (180/Math.PI);
+  // crowd dots
+  ctx.globalAlpha = 0.70;
+  for(let i=0;i<150;i++){
+    const x = (i/150)*W + (Math.random()*6-3);
+    const y = H*0.06 + (Math.random()*H*0.12);
+    ctx.fillStyle = `rgba(255,255,255,${0.06 + Math.random()*0.10})`;
+    ctx.fillRect(x,y,3,3);
+  }
+  ctx.globalAlpha = 1;
+}
 
-    trail.style.left = x + "%";
-    trail.style.bottom = y + "%";
-    trail.style.transform = `rotate(${ang}deg) translateX(-92px)`;
+function drawGround(){
+  // grass stripes area
+  const grassTop = H*0.22;
+  const grassH = H*0.78;
+  for(let i=0;i<18;i++){
+    const x = (i/18)*W;
+    const w = W/18 + 1;
+    ctx.fillStyle = (i%2===0) ? "rgba(46,229,157,.14)" : "rgba(46,229,157,.08)";
+    ctx.fillRect(x, grassTop, w, grassH);
+  }
+  // vignette
+  const vig = ctx.createRadialGradient(W*0.5, H*0.75, 60, W*0.5, H*0.75, W*0.75);
+  vig.addColorStop(0,"rgba(0,0,0,0)");
+  vig.addColorStop(1,"rgba(0,0,0,.30)");
+  ctx.fillStyle = vig;
+  ctx.fillRect(0,0,W,H);
 
-    if(p < 1){
-      requestAnimationFrame(step);
-    }else{
-      setTimeout(() => { ball.style.opacity = 0; trail.style.opacity = 0; }, 140);
+  // boundary ellipse
+  ctx.save();
+  ctx.globalAlpha = 0.55;
+  ctx.strokeStyle = "rgba(255,255,255,.22)";
+  ctx.setLineDash([6,7]);
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.ellipse(W*0.5, H*0.72, W*0.44, H*0.26, 0, 0, Math.PI*2);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawPitch(){
+  const stripW = W*0.56;
+  const stripH = H*0.26;
+  const x = W*0.5 - stripW/2;
+  const y = H*0.62;
+  // pitch strip
+  const p = ctx.createLinearGradient(0,y,0,y+stripH);
+  p.addColorStop(0,"rgba(255,209,102,.20)");
+  p.addColorStop(1,"rgba(255,209,102,.07)");
+  ctx.fillStyle = p;
+  drawRoundedRect(x,y,stripW,stripH,18);
+  ctx.fill();
+  ctx.strokeStyle = "rgba(255,209,102,.22)";
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // creases
+  ctx.strokeStyle = "rgba(255,255,255,.22)";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(x+stripW*0.06, y+stripH*0.28);
+  ctx.lineTo(x+stripW*0.94, y+stripH*0.28);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(x+stripW*0.06, y+stripH*0.70);
+  ctx.lineTo(x+stripW*0.94, y+stripH*0.70);
+  ctx.stroke();
+
+  // faint pitch texture
+  ctx.globalAlpha = 0.20;
+  for(let i=0;i<18;i++){
+    ctx.fillStyle = "rgba(255,255,255,.06)";
+    ctx.fillRect(x + (i/18)*stripW, y+6, 2, stripH-12);
+  }
+  ctx.globalAlpha = 1;
+}
+
+function drawWickets(px,py,shake=0,bailPop=0){
+  // px,py in pixels at base of stumps
+  ctx.save();
+  ctx.translate(px + shake, py);
+  // shadow
+  ctx.globalAlpha = 0.25;
+  ctx.fillStyle = "rgba(0,0,0,.65)";
+  ctx.beginPath();
+  ctx.ellipse(0, 12, 22, 6, 0, 0, Math.PI*2);
+  ctx.fill();
+  ctx.globalAlpha = 1;
+
+  // stumps
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = "rgba(255,255,255,.16)";
+  const sCol = "rgba(255,255,255,.26)";
+  for(let i=-1;i<=1;i++){
+    ctx.fillStyle = sCol;
+    drawRoundedRect(i*10-4, -56, 8, 60, 6);
+    ctx.fill();
+    ctx.stroke();
+  }
+
+  // bail
+  ctx.save();
+  ctx.translate(0, -56 - bailPop*18);
+  ctx.rotate(bailPop*1.2);
+  ctx.fillStyle = "rgba(255,255,255,.22)";
+  drawRoundedRect(-18, -6, 36, 8, 6);
+  ctx.fill();
+  ctx.stroke();
+  ctx.restore();
+
+  ctx.restore();
+}
+
+function drawPlayer(xN,yN,kit1,kit2,pose){
+  // xN,yN normalized (0..1)
+  const x = xN * W;
+  const y = yN * H;
+
+  // shadow
+  ctx.globalAlpha = 0.28;
+  ctx.fillStyle = "rgba(0,0,0,.65)";
+  ctx.beginPath();
+  ctx.ellipse(x, y+12, 20, 6, 0, 0, Math.PI*2);
+  ctx.fill();
+  ctx.globalAlpha = 1;
+
+  // body
+  const bodyGrad = ctx.createLinearGradient(x, y-46, x, y);
+  bodyGrad.addColorStop(0, kit1);
+  bodyGrad.addColorStop(1, kit2);
+  ctx.fillStyle = bodyGrad;
+  ctx.strokeStyle = "rgba(255,255,255,.16)";
+  ctx.lineWidth = 1;
+
+  drawRoundedRect(x-18, y-46, 36, 42, 14);
+  ctx.fill(); ctx.stroke();
+
+  // head
+  ctx.fillStyle = "rgba(234,240,255,.92)";
+  ctx.beginPath();
+  ctx.arc(x, y-56, 10, 0, Math.PI*2);
+  ctx.fill();
+  ctx.strokeStyle = "rgba(255,255,255,.14)";
+  ctx.stroke();
+
+  // legs
+  ctx.fillStyle = "rgba(255,255,255,.20)";
+  drawRoundedRect(x-14, y-6, 10, 22, 8);
+  drawRoundedRect(x+4,  y-6, 10, 22, 8);
+  ctx.fill();
+
+  // bat / arm pose
+  if(pose === "batIdle" || pose === "batSwing"){
+    ctx.save();
+    ctx.translate(x+18, y-26);
+    const a = (pose==="batSwing") ? -1.0 : 0.35;
+    ctx.rotate(a);
+    ctx.fillStyle = "rgba(255,209,102,.92)";
+    ctx.strokeStyle = "rgba(255,209,102,.22)";
+    drawRoundedRect(0, -4, 10, 54, 8);
+    ctx.fill(); ctx.stroke();
+    ctx.restore();
+  }
+  if(pose === "bowlRun" || pose === "bowlThrow"){
+    // arm
+    ctx.save();
+    ctx.translate(x+18, y-30);
+    const a = (pose==="bowlThrow") ? -1.2 : 0.25;
+    ctx.rotate(a);
+    ctx.fillStyle = "rgba(234,240,255,.22)";
+    ctx.strokeStyle = "rgba(255,255,255,.10)";
+    drawRoundedRect(0, -2, 8, 34, 8);
+    ctx.fill(); ctx.stroke();
+    ctx.restore();
+  }
+}
+
+function drawBall(xN,yN,alpha=1){
+  const x = xN * W;
+  const y = yN * H;
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  // trail glow
+  const g = ctx.createRadialGradient(x,y,2,x,y,18);
+  g.addColorStop(0,"rgba(106,168,255,.35)");
+  g.addColorStop(1,"rgba(106,168,255,0)");
+  ctx.fillStyle = g;
+  ctx.beginPath(); ctx.arc(x,y,18,0,Math.PI*2); ctx.fill();
+
+  // ball
+  const b = ctx.createRadialGradient(x-3,y-3,1,x,y,8);
+  b.addColorStop(0,"rgba(255,255,255,.95)");
+  b.addColorStop(1,"rgba(255,255,255,.25)");
+  ctx.fillStyle = b;
+  ctx.strokeStyle = "rgba(255,255,255,.18)";
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.arc(x,y,6,0,Math.PI*2); ctx.fill(); ctx.stroke();
+  ctx.restore();
+}
+
+function drawBanner(text, tone, t){
+  // t is progress 0..1
+  const alpha = clamp01(t);
+  const scale = 0.96 + 0.04*alpha;
+  const w = Math.min(W*0.52, 420);
+  const h = 46;
+  const x = W*0.5 - (w/2);
+  const y = H*0.12;
+
+  ctx.save();
+  ctx.globalAlpha = 0.88*alpha;
+  ctx.translate(W*0.5, y + h/2);
+  ctx.scale(scale, scale);
+  ctx.translate(-W*0.5, -(y + h/2));
+
+  ctx.fillStyle = "rgba(9,14,27,.76)";
+  ctx.strokeStyle = "rgba(255,255,255,.14)";
+  ctx.lineWidth = 1;
+  drawRoundedRect(x,y,w,h,999);
+  ctx.fill(); ctx.stroke();
+
+  let col = "rgba(46,229,157,1)";
+  if(tone==="bad") col = "rgba(255,90,122,1)";
+  if(tone==="warn") col = "rgba(255,209,102,1)";
+  ctx.fillStyle = col;
+  ctx.font = "900 20px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  ctx.textAlign="center"; ctx.textBaseline="middle";
+  ctx.fillText(text, W*0.5, y + h/2 + 1);
+  ctx.restore();
+}
+
+function drawParticles(dt){
+  anim.particles = anim.particles.filter(p=>p.life < p.max);
+  for(const p of anim.particles){
+    p.life += dt;
+    p.x += p.vx * dt;
+    p.y += p.vy * dt;
+    p.vy += 0.55 * dt;
+    p.rot += p.vr * dt;
+
+    const x = p.x * W;
+    const y = p.y * H;
+    const a = clamp01(1 - (p.life / p.max));
+    ctx.save();
+    ctx.globalAlpha = 0.9 * a;
+    ctx.translate(x,y);
+    ctx.rotate(p.rot);
+    ctx.fillStyle = `hsla(${p.hue}, 92%, 70%, ${0.95*a})`;
+    ctx.fillRect(-p.r/2, -p.r/2, p.r, p.r);
+    ctx.restore();
+  }
+}
+
+/* Main animation tick */
+function tick(now){
+  if(!anim.active) return;
+  const t = (now - anim.t0);
+  const p = clamp01(t / anim.duration);
+
+  // timeline slices:
+  // 0.00-0.22 bowler run-up
+  // 0.22-0.40 release and ball to bat
+  // 0.40-0.55 bat impact
+  // 0.55-1.00 outcome (runs/boundary/wicket + runners)
+  const p1 = clamp01((p - 0.00) / 0.22);
+  const p2 = clamp01((p - 0.22) / 0.18);
+  const p3 = clamp01((p - 0.40) / 0.15);
+  const p4 = clamp01((p - 0.55) / 0.45);
+
+  // compute positions for characters/ball (normalized)
+  const baseBowlerX = 0.78;
+  const bowlerRun = easeOutCubic(p1) * 0.06; // moves left
+  const bowlerX = baseBowlerX - bowlerRun;
+  const bowlerPose = (p < 0.22) ? "bowlRun" : (p < 0.42) ? "bowlThrow" : "bowlThrow";
+
+  const strikerPose = (p < 0.40) ? "batIdle" : (p < 0.55) ? "batSwing" : "batIdle";
+
+  // ball to bat path
+  let ballVisible = (p >= 0.22);
+  let bx = bowlerX;
+  let by = 0.58;
+
+  if(p < 0.22){
+    ballVisible = false;
+  }else if(p < 0.40){
+    const tt = easeOutCubic(p2);
+    bx = lerp(bowlerX, 0.30, tt);
+    by = lerp(0.58, 0.70, tt);
+  }else{
+    // post-hit
+    const hitX = 0.30, hitY = 0.70;
+    if(anim.outcome==="DOT"){
+      const tt = easeOutCubic(p4);
+      bx = lerp(hitX, 0.44, tt);
+      by = lerp(hitY, 0.66, tt);
+    }else if(anim.outcome==="WICKET"){
+      const tt = easeOutCubic(p4);
+      bx = lerp(hitX, 0.40, tt);
+      by = lerp(hitY, 0.62, tt);
+      anim.bailPop = (p4>0.10) ? Math.min(1, (p4-0.10)/0.30) : 0;
+    }else if(anim.outcome==="RUN1" || anim.outcome==="RUN2"){
+      const tt = easeOutCubic(p4);
+      bx = lerp(hitX, 0.62, tt);
+      by = lerp(hitY, 0.64, tt + 0.2*Math.sin(tt*Math.PI));
+    }else if(anim.outcome==="FOUR"){
+      const tt = easeOutCubic(p4);
+      bx = lerp(hitX, 0.88, tt);
+      by = lerp(hitY, 0.58, tt) + (0.07*(1 - Math.pow((tt-0.5)/0.5,2))); // small hop
+    }else if(anim.outcome==="SIX"){
+      const tt = easeOutCubic(p4);
+      bx = lerp(hitX, 0.88, tt);
+      const arc = 0.22*(1 - Math.pow((tt-0.5)/0.5,2));
+      by = lerp(hitY, 0.48, tt) - arc;
     }
   }
-  requestAnimationFrame(step);
-}
 
-/* Running between wickets: swap batsman + non-striker positions */
-function animateRunning(runs){
-  // only for 1 or 2 runs
-  const aStart = { left: 19, bottom: 17 };
-  const aEnd   = { left: 46, bottom: 28 };
-  const bStart = { left: 46, bottom: 28 };
-  const bEnd   = { left: 19, bottom: 17 };
+  // runners swap animation for 1/2 runs
+  let strikerX = 0.22, strikerY = 0.72;
+  let nonX = 0.48, nonY = 0.58;
 
-  const laps = runs; // 1 run -> swap once, 2 runs -> swap twice (swap then swap back)
-  const total = 700 + (runs===2 ? 250 : 0);
-  const seg = total / laps;
+  if(anim.outcome==="RUN1" || anim.outcome==="RUN2"){
+    // run happens during p4
+    const tt = easeInOutQuad(p4);
+    const A0 = {x:0.22,y:0.72}, A1={x:0.48,y:0.58};
+    const B0 = {x:0.48,y:0.58}, B1={x:0.22,y:0.72};
 
-  function setPos(el, p){
-    el.style.left = p.left + "%";
-    el.style.bottom = p.bottom + "%";
-  }
-
-  function lerp(a,b,t){ return a + (b-a)*t; }
-
-  let lap = 0;
-  function runOneLap(forward=true){
-    const startTime = performance.now();
-    const fromA = forward ? aStart : aEnd;
-    const toA   = forward ? aEnd   : aStart;
-    const fromB = forward ? bStart : bEnd;
-    const toB   = forward ? bEnd   : bStart;
-
-    function step(t){
-      const p = Math.min(1, (t - startTime)/seg);
-      const e = p < 0.5 ? 2*p*p : 1 - Math.pow(-2*p+2, 2)/2; // easeInOut quad
-
-      setPos(batsman, { left: lerp(fromA.left,toA.left,e), bottom: lerp(fromA.bottom,toA.bottom,e) });
-      setPos(nonStriker,{ left: lerp(fromB.left,toB.left,e), bottom: lerp(fromB.bottom,toB.bottom,e) });
-
-      if(p < 1){
-        requestAnimationFrame(step);
+    if(anim.outcome==="RUN1"){
+      strikerX = lerp(A0.x,A1.x,tt);
+      strikerY = lerp(A0.y,A1.y,tt);
+      nonX = lerp(B0.x,B1.x,tt);
+      nonY = lerp(B0.y,B1.y,tt);
+    }else{
+      // 2 runs: swap then swap back (two phases)
+      if(p4 < 0.55){
+        const tA = easeInOutQuad(p4/0.55);
+        strikerX = lerp(A0.x,A1.x,tA);
+        strikerY = lerp(A0.y,A1.y,tA);
+        nonX = lerp(B0.x,B1.x,tA);
+        nonY = lerp(B0.y,B1.y,tA);
       }else{
-        lap++;
-        if(lap < laps){
-          runOneLap(!forward); // for 2 runs, swap back
-        }
+        const tB = easeInOutQuad((p4-0.55)/0.45);
+        strikerX = lerp(A1.x,A0.x,tB);
+        strikerY = lerp(A1.y,A0.y,tB);
+        nonX = lerp(B1.x,B0.x,tB);
+        nonY = lerp(B1.y,B0.y,tB);
       }
     }
-    requestAnimationFrame(step);
   }
 
-  runOneLap(true);
+  // draw frame
+  ctx.clearRect(0,0,W,H);
+  drawStadium();
+  drawGround();
+  drawPitch();
+
+  // wickets: batsman end on left, bowler end on right
+  const stripBaseY = H*0.62 + H*0.26*0.70;
+  drawWickets(W*0.30, stripBaseY, (anim.outcome==="WICKET" ? (Math.sin(p*60)*2*(1-p4)) : 0), anim.bailPop);
+  drawWickets(W*0.70, stripBaseY, 0, 0);
+
+  // players
+  drawPlayer(strikerX, strikerY, "rgba(106,168,255,.95)", "rgba(106,168,255,.35)", strikerPose);
+  drawPlayer(nonX, nonY, "rgba(46,229,157,.90)", "rgba(46,229,157,.30)", "batIdle");
+  drawPlayer(bowlerX, 0.66, "rgba(255,90,122,.75)", "rgba(255,90,122,.25)", bowlerPose);
+
+  // ball
+  if(ballVisible){
+    drawBall(bx, by, 1);
+  }
+
+  // banner appears near impact onwards
+  if(p > 0.52){
+    const tone = (anim.bannerTone==="bad") ? "bad" : (anim.bannerTone==="warn") ? "warn" : "good";
+    drawBanner(anim.bannerText, tone, clamp01((p-0.52)/0.18));
+  }
+
+  // particles
+  const dt = 1/60;
+  drawParticles(dt);
+
+  if(p >= 1){
+    anim.active = false;
+  }else{
+    requestAnimationFrame(tick);
+  }
 }
 
-function playOutcomeAnimation(outcome, runs=0){
-  clearSceneFX(false);
-
-  // Update message
-  if(outcome === "WICKET") gameMsg.textContent = "Wrong answer → OUT! (wicket)";
-  else if(outcome === "DOT") gameMsg.textContent = "Wrong/skip → DOT BALL";
-  else gameMsg.textContent = `Correct → ${runs} run${runs>1?"s":""}${runs>=4 ? " (boundary)":" "}`;
-
-  // 1) Bowler delivers
-  bowlerDeliver();
-
-  // 2) Ball travels bowler->batsman (release phase)
-  const start = { x: 72, y: 30 };
-  const batPoint = { x: 30, y: 22 }; // near batsman
-  setTimeout(() => {
-    flyBallPath(start, batPoint, 0, 520);
-  }, 260);
-
-  // 3) Bat swing at impact
-  setTimeout(() => {
-    swingBat();
-  }, 520);
-
-  // 4) Post-hit: choose path/effects
-  setTimeout(() => {
-    if(outcome === "WICKET"){
-      showBanner("OUT!", "bad");
-      stumpsBat.classList.add("wicketShake");
-      bailBat.classList.add("bailFly");
-      // small deflection
-      flyBallPath({x:30,y:22}, {x:40,y:18}, 0, 360);
-      return;
-    }
-
-    if(outcome === "DOT"){
-      showBanner("DOT BALL", "bad");
-      flyBallPath({x:30,y:22}, {x:44,y:20}, 0, 420);
-      return;
-    }
-
-    // runs
-    if(runs >= 6){
-      showBanner("SIX!", "warn");
-      burstConfetti();
-      flyBallPath({x:30,y:22}, {x:88,y:66}, 22, 760);
-      return;
-    }
-    if(runs >= 4){
-      showBanner("FOUR!", "warn");
-      flyBallPath({x:30,y:22}, {x:88,y:38}, 8, 660);
-      return;
-    }
-
-    // 1 or 2 runs
-    showBanner(`${runs} RUN${runs>1?"S":""}`, "good");
-    flyBallPath({x:30,y:22}, {x:60,y:26}, 6, 520);
-    animateRunning(runs);
-  }, 700);
-}
-
-/***********************
- * GAME FLOW: MCQ -> GAME -> MCQ
- ***********************/
+/* =========================
+   GAME FLOW
+   ========================= */
 function nextBall(){
   if(state.ended) return;
 
@@ -1417,7 +1139,6 @@ function nextBall(){
     endInnings("Question bank finished.");
     return;
   }
-
   if(state.ballInOver === 0){
     state.over += 1;
   }
@@ -1429,7 +1150,6 @@ function nextBall(){
   lockButtons(false);
   setToast(false);
   renderAll();
-
   flipTo("quiz");
 }
 
@@ -1440,63 +1160,63 @@ function handleAnswer(choiceIndex){
   const correct = (choiceIndex === current.answer);
   const diff = current.difficulty || 2;
 
-  // brief feedback on quiz first (so learner knows immediately)
+  // quick confirm on quiz
   if(correct){
-    setToast(true, "good", "Correct!",
-      `<b>Good.</b> Now watch the cricket outcome.`
-    );
+    setToast(true, "good", "Correct", "Now watch the pitch outcome.");
   }else{
-    setToast(true, "bad", "Wrong!",
-      `<b>Correct:</b> ${escapeHtml(current.choices[current.answer])}`
-    );
+    setToast(true, "bad", "Wrong", `<b>Correct:</b> ${escapeHtml(current.choices[current.answer])}`);
   }
 
-  // Decide outcome
+  // decide outcome
   let outcome = "DOT";
   let runs = 0;
 
   if(correct){
     runs = difficultyRuns(diff);
-    outcome = "RUNS";
     state.runs += runs;
     state.correct += 1;
+    outcome = (runs>=6) ? "SIX" : (runs>=4) ? "FOUR" : (runs===2) ? "RUN2" : "RUN1";
   }else{
     state.wrong += 1;
-    const wc = wicketChance(diff);
-    const isWicket = Math.random() < wc;
-    outcome = isWicket ? "WICKET" : "DOT";
-    if(isWicket) state.wickets += 1;
+    const isWicket = Math.random() < wicketChance(diff);
+    if(isWicket){
+      outcome = "WICKET";
+      state.wickets += 1;
+    }else{
+      outcome = "DOT";
+    }
   }
 
   advanceBallCounters();
   renderAll();
 
-  // Flip to game, play animation, then return to quiz with explanation
+  // move to game screen and run canvas animation
   setTimeout(() => {
     flipTo("game");
-    clearSceneFX(false);
-    playOutcomeAnimation(outcome, runs);
+    if(outcome==="SIX") addParticles("confetti"); // additional burst
+    gameMsg.textContent = (outcome==="WICKET") ? "OUT!" :
+                          (outcome==="DOT") ? "DOT BALL" :
+                          (outcome==="FOUR") ? "FOUR!" :
+                          (outcome==="SIX") ? "SIX!" :
+                          (outcome==="RUN2") ? "2 RUNS" : "1 RUN";
+    startAnimation(outcome, runs);
 
-    // After game animation, come back to quiz and show explanation (learning)
+    // return to quiz + explanation
     setTimeout(() => {
-      if(state.ended) return;
-
-      // show detailed explanation on quiz
       flipTo("quiz");
       setToast(true, correct ? "good" : "bad",
-        correct ? "Explanation" : "Explanation (read this)",
+        "Explanation",
         `<b>Why:</b> ${escapeHtml(current.explain)}`
       );
 
-      // move on after a short pause
       setTimeout(() => {
         setToast(false);
         nextBall();
-      }, SETTINGS.afterGameToNextQuizMs + 650);
+      }, SETTINGS.explainOnQuizMs);
 
-    }, SETTINGS.gameAnimTotalMs);
+    }, SETTINGS.animTotalMs);
 
-  }, SETTINGS.showFeedbackOnQuizMs);
+  }, SETTINGS.quizConfirmMs);
 }
 
 function skipBall(){
@@ -1507,27 +1227,27 @@ function skipBall(){
   advanceBallCounters();
   renderAll();
 
-  setToast(true, "bad", "Skipped", "Dot ball. Watch the outcome, then next question.");
+  setToast(true, "bad", "Skipped", "Dot ball. Watch the pitch outcome.");
 
   setTimeout(() => {
     flipTo("game");
-    playOutcomeAnimation("DOT", 0);
+    gameMsg.textContent = "DOT BALL";
+    startAnimation("DOT", 0);
 
     setTimeout(() => {
       flipTo("quiz");
       setToast(false);
       nextBall();
-    }, SETTINGS.gameAnimTotalMs);
+    }, SETTINGS.animTotalMs);
 
-  }, 450);
+  }, 420);
 }
 
 function endInnings(reason){
   state.ended = true;
   lockButtons(true);
-
-  // show summary on quiz screen
   flipTo("quiz");
+
   const total = state.correct + state.wrong;
   const acc = total ? Math.round((state.correct/total)*100) : 0;
 
@@ -1539,9 +1259,9 @@ function endInnings(reason){
   );
 }
 
-/***********************
- * Wiring
- ***********************/
+/* =========================
+   BUTTONS + MODAL
+   ========================= */
 $("startBtn").addEventListener("click", () => {
   resetState();
   lockButtons(false);
@@ -1550,20 +1270,18 @@ $("startBtn").addEventListener("click", () => {
 $("skipBtn").addEventListener("click", skipBall);
 $("endBtn").addEventListener("click", () => endInnings("Ended by learner."));
 
-// Modal
 const modal = $("modal");
-$("howBtn").addEventListener("click", () => modal.classList.add("show"));
-$("closeHow").addEventListener("click", () => modal.classList.remove("show"));
-modal.addEventListener("click", (e) => { if(e.target === modal) modal.classList.remove("show"); });
+$("howBtn").addEventListener("click", ()=>modal.classList.add("show"));
+$("closeHow").addEventListener("click", ()=>modal.classList.remove("show"));
+modal.addEventListener("click", (e)=>{ if(e.target===modal) modal.classList.remove("show"); });
 
-// Init
-(function init(){
-  bpoLbl.textContent = SETTINGS.ballsPerOver;
-  wktMaxLbl.textContent = SETTINGS.maxWickets;
-  resetState();
-  lockButtons(true);
-  flipTo("quiz");
-})();
+/* =========================
+   INIT
+   ========================= */
+resizeCanvas();
+resetState();
+lockButtons(true);
+flipTo("quiz");
 </script>
 </body>
 </html>
